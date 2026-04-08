@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Asegúrate de tener node-fetch instalado
+const fetch = require("node-fetch"); 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Endpoint para analizar la uña
 app.post("/analyze", async (req, res) => {
   const { image_url } = req.body;
 
@@ -15,7 +14,6 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    // Llamada a OpenAI GPT-4o con capacidades de visión
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -23,7 +21,7 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini", // modelo GPT con visión
+        model: "gpt-4.1-mini",
         input: [
           {
             role: "user",
@@ -51,9 +49,8 @@ app.post("/analyze", async (req, res) => {
     }
 
     const data = await response.json();
-    const content = data.output_text || ""; // extraemos la respuesta de texto
+    const content = data.output_text || "";
 
-    // Extraer JSON de la respuesta
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
@@ -67,7 +64,6 @@ app.post("/analyze", async (req, res) => {
   }
 });
 
-// Endpoint raíz para probar que el servidor funciona
 app.get("/", (req, res) => {
   res.send("Servidor funcionando correctamente");
 });
