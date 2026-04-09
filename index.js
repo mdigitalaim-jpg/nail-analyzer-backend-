@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Asegúrate de que está instalado en tu proyecto
+const fetch = require("node-fetch"); // Asegúrate de tenerlo instalado
 
 const app = express();
 app.use(cors());
@@ -21,7 +21,7 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4.1",
+        model: "gpt-4o",
         input: [
           {
             role: "user",
@@ -29,7 +29,7 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `Analiza la(s) uña(s) de esta imagen desde un punto de vista técnico profesional de manicura.
-                
+
 Quiero que evalúes:
 
 1. Curvatura (C-curve):
@@ -81,15 +81,28 @@ IMPORTANTE:
     }
 
     const data = await response.json();
-    const content = data.output_text || "";
 
-    // Manejo seguro: intenta extraer JSON aunque haya texto extra
+    // Manejo seguro para GPT-4o: extrae texto aunque haya contenido extra
+    let contentText = "";
+    if (data.output && data.output.length > 0 && data.output[0].content) {
+      for (const c of data.output[0].content) {
+        if (c.type === "output_text") {
+          contentText += c.text;
+        }
+      }
+    }
+
+    if (!contentText) {
+      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
+    }
+
+    // Extrae JSON aunque haya texto extra antes/después
     let result;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = contentText.match(/\{[\s\S]*\}/);
       result = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
     } catch (e) {
-      console.error("Error parsing JSON de OpenAI:", content);
+      console.error("Error parsing JSON de OpenAI:", contentText);
       return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
     }
 
@@ -98,6 +111,7 @@ IMPORTANTE:
     }
 
     res.json(result);
+
   } catch (error) {
     console.error("Error interno del servidor:", error);
     res.status(500).json({ error: "Error interno del servidor" });
