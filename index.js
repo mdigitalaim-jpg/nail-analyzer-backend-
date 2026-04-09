@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Asegúrate de tener node-fetch instalado
+const fetch = require("node-fetch"); // Asegúrate de que está instalado en tu proyecto
 
 const app = express();
 app.use(cors());
@@ -29,7 +29,7 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `Analiza la(s) uña(s) de esta imagen desde un punto de vista técnico profesional de manicura.
-
+                
 Quiero que evalúes:
 
 1. Curvatura (C-curve):
@@ -83,7 +83,7 @@ IMPORTANTE:
     const data = await response.json();
     const content = data.output_text || "";
 
-    // Intento de extraer JSON aunque haya texto extra
+    // Manejo seguro: intenta extraer JSON aunque haya texto extra
     let result;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
