@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const fetch = require("node-fetch"); // Asegúrate de tener node-fetch instalado
 
 const app = express();
 app.use(cors());
@@ -69,7 +70,7 @@ IMPORTANTE:
             ],
           },
         ],
-        max_output_tokens: 500,
+        max_output_tokens: 1000,
       }),
     });
 
@@ -82,16 +83,23 @@ IMPORTANTE:
     const data = await response.json();
     const content = data.output_text || "";
 
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    // Intento de extraer JSON aunque haya texto extra
+    let result;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      result = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    } catch (e) {
+      console.error("Error parsing JSON de OpenAI:", content);
       return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
     }
 
-    const result = JSON.parse(jsonMatch[0]);
+    if (!result) {
+      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
+    }
 
     res.json(result);
   } catch (error) {
-    console.error(error);
+    console.error("Error interno del servidor:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
