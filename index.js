@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); 
 
 const app = express();
 app.use(cors());
@@ -21,15 +20,47 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-4.1",
         input: [
           {
             role: "user",
             content: [
               {
                 type: "input_text",
-                text:
-                  'Analiza la curvatura de la uña en esta imagen y responde SOLO con JSON válido: {"curvatura": número entre 0 y 100, "nivel": "baja" | "media" | "alta", "descripcion": "breve explicación profesional"}',
+                text: `Analiza la(s) uña(s) de esta imagen desde un punto de vista técnico profesional de manicura.
+
+Quiero que evalúes:
+
+1. Curvatura (C-curve):
+- Estima el porcentaje aproximado (30%, 40%, 50%, 60%, etc.)
+- Explica brevemente por qué
+
+2. Inclinación:
+- Indica si la uña está recta, hacia arriba o hacia abajo
+- Especifica si la inclinación es leve, moderada o pronunciada
+
+3. Simetría:
+- Evalúa si la curvatura está equilibrada en ambos lados
+- Indica si hay colapso lateral o desbalance
+
+4. Uniformidad (si hay varias uñas):
+- Compara entre ellas y menciona diferencias
+
+5. Conclusión:
+- Resume en valores claros (curvatura %, inclinación, calidad general)
+
+IMPORTANTE:
+- Da estimaciones visuales profesionales, no genéricas
+- Sé preciso, directo y técnico
+- Responde SOLO en JSON válido con esta estructura:
+
+{
+  "curvatura": { "porcentaje": number, "explicacion": string },
+  "inclinacion": { "direccion": "recta" | "arriba" | "abajo", "grado": "leve" | "moderada" | "pronunciada" },
+  "simetria": { "estado": string, "detalle": string },
+  "uniformidad": string,
+  "conclusion": string
+}`
               },
               {
                 type: "input_image",
@@ -38,13 +69,13 @@ app.post("/analyze", async (req, res) => {
             ],
           },
         ],
-        max_output_tokens: 300,
+        max_output_tokens: 500,
       }),
     });
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("OpenAI error:", response.status, err);
+      console.error("OpenAI error:", err);
       return res.status(500).json({ error: "Error al analizar la imagen" });
     }
 
@@ -57,15 +88,16 @@ app.post("/analyze", async (req, res) => {
     }
 
     const result = JSON.parse(jsonMatch[0]);
-    return res.json({ resultado: result });
+
+    res.json(result);
   } catch (error) {
-    console.error("Error interno:", error);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    console.error(error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando correctamente");
+  res.send("Servidor funcionando");
 });
 
 const PORT = process.env.PORT || 3000;
