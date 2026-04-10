@@ -4,7 +4,7 @@ const fetch = require("node-fetch");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 
 app.post("/analyze", async (req, res) => {
   const { image_url } = req.body;
@@ -30,19 +30,48 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Analiza esta imagen de uñas.
+Eres un analista técnico profesional de uñas esculpidas.
 
-Devuelve SOLO un JSON válido.
+Analiza la imagen y responde en este formato EXACTO:
 
-Si no estás seguro, usa null.
+CURVATURA:
+- descripción
 
-Formato:
+LATERALES:
+- descripción
+
+APEX:
+- descripción
+
+SMILE LINE:
+- descripción
+
+ERRORES:
+- lista de errores visibles
+
+LIMITACIONES:
+- qué no se ve claramente
+
+Además, devuelve al final un JSON válido entre triple backticks con coordenadas estimadas (0 a 1) para overlay:
+
+\`\`\`json
 {
-  "apex": { "x": 0.5, "y": 0.3 },
-  "smileLine": [],
-  "sidewalls": { "left": [], "right": [] },
-  "errors": []
+  "apex": { "x": 0.5, "y": 0.5 },
+  "smileLine": [{ "x": 0.2, "y": 0.7 }],
+  "sidewalls": {
+    "left": [{ "x": 0.3, "y": 0.9 }, { "x": 0.4, "y": 0.2 }],
+    "right": [{ "x": 0.6, "y": 0.9 }, { "x": 0.7, "y": 0.2 }]
+  },
+  "errors": [
+    { "x": 0.4, "y": 0.5, "type": "defect" }
+  ]
 }
+\`\`\`
+
+REGLAS:
+- SOLO usa lo visible
+- No inventes detalles ocultos
+- Si algo no se ve, indícalo en limitaciones
 `
               },
               {
@@ -59,37 +88,53 @@ Formato:
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({
-        error: "OpenAI error",
-        details: data
-      });
+      console.error("OPENAI ERROR:", JSON.stringify(data, null, 2));
+      return res.status(500).json({ error: "Error OpenAI", details: data });
     }
 
-    const text =
-      data.output_text ||
-      data.output?.[0]?.content?.[0]?.text ||
-      "";
+    // 🔥 EXTRAER TEXTO SIN ROMPER NADA
+    let text = "";
 
-    // 🔴 NO romper si no es JSON perfecto
-    let json = null;
+    if (data.output_text) {
+      text = data.output_text;
+    } else if (data.output) {
+      for (const item of data.output) {
+        for (const c of item.content || []) {
+          if (c.type === "output_text") {
+            text += c.text;
+          }
+        }
+      }
+    }
+
+    text = text.trim();
+
+    // 🔥 EXTRAER JSON ENTRE ```json ```
+    let overlay = null;
 
     try {
-      json = JSON.parse(text);
+      const match = text.match(/```json([\s\S]*?)```/);
+      if (match) {
+        overlay = JSON.parse(match[1]);
+      }
     } catch (e) {
-      console.log("NO JSON PERFECTO, DEVUELVO TEXTO");
-      return res.json({
-        raw: text
-      });
+      overlay = null;
     }
 
     res.json({
-      overlay: json
+      analysis: text,
+      overlay: overlay
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error interno" });
+    console.error("FATAL ERROR:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
-app.listen(3000, () => console.log("Running"));
+app.get("/", (req, res) => {
+  res.send("Servidor funcionando");
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
