@@ -31,42 +31,36 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un analista visual de uñas.
+Analiza la imagen de uñas de forma estrictamente visual.
 
-🚨 REGLAS CRÍTICAS:
-- NO inventes formas (stiletto, almond, etc) si no es 100% evidente
-- NO inventes medidas (mm o % exactos)
-- NO completes información faltante
-- SOLO describe evidencia visual
+🚨 REGLAS:
+- Solo usa lo visible en la imagen
+- No inventes formas (stiletto, almond, etc)
+- No inventes medidas en mm o porcentajes exactos
+- No describas fondo ni entorno
+- Si algo no es claro → "no determinado"
 
 ────────────────────────────
-💅 ANALIZA SOLO ESTO:
+💅 ANÁLISIS OBLIGATORIO
 ────────────────────────────
 
-- Curvatura: baja / media / alta (sin porcentajes obligatorios)
+- Curvatura: baja / media / alta (o no determinado)
 - Borde libre: corto / medio / largo
-- Forma: SOLO si es claramente evidente, si no "no determinada"
+- Forma: solo si es evidente
 - Alineación: recta / inclinada
-- Apex: visible / no visible / dudoso
+- Apex: visible / dudoso / no visible
 - Laterales: paralelos / abiertos / cerrados si se ven
-- Smile line: visible / parcial / no visible
-- Calidad del producto: brillo / burbujas SOLO si se ven
+- Smile line: definida / parcial / no visible
+- Calidad del producto: brillo, burbujas si se ven
 - Cutícula: limpia / con exceso / no visible
 
 ────────────────────────────
-🚫 PROHIBIDO ABSOLUTO:
+📊 FORMATO
 ────────────────────────────
-- Inventar estilos de uñas
-- Inventar medidas exactas
-- Suponer detalles invisibles
-- Completar información
 
-────────────────────────────
-📊 RESPUESTA CLARA:
-────────────────────────────
 Descripción:
 Análisis:
-Dudas:
+Observaciones:
 Conclusión:
                 `,
               },
@@ -86,31 +80,38 @@ Conclusión:
 
     const data = await response.json();
 
-    let contentText =
-      data.output?.[0]?.content?.find(c => c.type === "output_text")?.text || "";
+    // 🔥 EXTRACCIÓN ROBUSTA (ESTO ES LO QUE TE FALTABA)
+    let contentText = "";
 
-    // 🔥 VALIDACIÓN SIMPLE ANTI-INVENTOS
-    const banned = ["stiletto", "almond", "coffin", "1mm", "30%", "40%", "50%"];
+    if (data.output && Array.isArray(data.output)) {
+      for (const item of data.output) {
+        if (item.content && Array.isArray(item.content)) {
+          for (const c of item.content) {
+            if (c.text) {
+              contentText += c.text;
+            }
+          }
+        }
+      }
+    }
 
-    let cleaned = contentText;
+    if (!contentText) {
+      console.error("Respuesta OpenAI vacía:", JSON.stringify(data, null, 2));
+      return res.status(500).json({
+        error: "OpenAI no devolvió contenido",
+      });
+    }
 
-    banned.forEach(word => {
-      const regex = new RegExp(word, "gi");
-      cleaned = cleaned.replace(regex, "[NO VALIDADO]");
-    });
-
-    res.json({
-      result: cleaned
-    });
+    res.json({ result: contentText });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando");
+  res.send("Servidor funcionando correctamente");
 });
 
 const PORT = process.env.PORT || 3000;
