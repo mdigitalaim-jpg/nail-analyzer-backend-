@@ -30,35 +30,49 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un analista técnico de uñas.
+Eres un ANALISTA TÉCNICO PROFESIONAL en uñas esculpidas.
 
-Devuelve:
+REGLAS:
+- Analiza SOLO lo visible
+- NO inventes información
+- Si algo no se ve, dilo claramente
+- Sé técnico y preciso
 
-1. ANÁLISIS TEXTO:
-- curvatura
-- laterales
-- apex
-- smile line
-- errores
-- limitaciones
+FORMATO OBLIGATORIO:
 
-2. JSON AL FINAL ENTRE TRIPLE BACKTICKS:
+CURVATURA:
+- porcentaje estimado
+- explicación
 
-\`\`\`json
+LATERALES:
+- descripción técnica
+
+APEX:
+- posición y calidad
+
+SMILE LINE:
+- forma y simetría
+
+ERRORES:
+- lista de fallos visibles reales
+
+LIMITACIONES:
+- qué no se puede ver con claridad
+
+IMPORTANTE:
+Al final del texto incluye ESTE JSON EXACTO entre ```json:
+
 {
   "apex": { "x": 0.5, "y": 0.5 },
   "smileLine": [{ "x": 0.2, "y": 0.7 }],
   "sidewalls": {
-    "left": [],
-    "right": []
+    "left": [{ "x": 0.3, "y": 0.9 }, { "x": 0.4, "y": 0.2 }],
+    "right": [{ "x": 0.6, "y": 0.9 }, { "x": 0.7, "y": 0.2 }]
   },
-  "errors": []
+  "errors": [
+    { "x": 0.4, "y": 0.5, "type": "defect" }
+  ]
 }
-\`\`\`
-
-REGLAS:
-- SOLO lo visible
-- coordenadas 0-1
 `
               },
               {
@@ -77,47 +91,50 @@ REGLAS:
     if (!response.ok) {
       console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({
-        error: "OpenAI falló",
+        error: "OpenAI error",
         details: data
       });
     }
 
-    const text =
+    // EXTRACCIÓN SEGURA
+    let text =
       data.output_text ||
       data.output?.flatMap(o =>
         o.content?.map(c => c.text || "")
       ).join("") ||
       "";
 
-    // extraer JSON sin romper servidor
+    text = text.trim();
+
+    // EXTRACCIÓN JSON ROBUSTA
     let overlay = null;
 
     const match = text.match(/```json([\s\S]*?)```/);
     if (match) {
       try {
-        overlay = JSON.parse(match[1]);
+        overlay = JSON.parse(match[1].trim());
       } catch (e) {
         overlay = null;
       }
     }
 
-    res.json({
+    return res.json({
       analysis: text,
       overlay: overlay
     });
 
   } catch (error) {
-    console.error("FATAL:", error);
-    res.status(500).json({
-      error: "Error interno",
+    console.error("FATAL ERROR:", error);
+    return res.status(500).json({
+      error: "Error interno del servidor",
       message: error.message
     });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("OK");
+  res.send("Servidor funcionando");
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("RUNNING"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
