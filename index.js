@@ -22,7 +22,7 @@ app.post("/analyze", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        temperature: 0.2,
+        temperature: 0.1,
         input: [
           {
             role: "user",
@@ -31,162 +31,134 @@ app.post("/analyze", async (req, res) => {
                 type: "input_text",
                 text: `Eres un JUEZ INTERNACIONAL DE COMPETICIÓN en uñas esculpidas.
 
-Tu análisis es técnico, estricto y real.
-NO describes → JUZGAS.
+Evalúas con criterio estricto profesional.
 
 ━━━━━━━━━━━━━━━━━━━
-📷 PASO 1: ANÁLISIS POR DEDO (CRÍTICO)
+🔍 PASO 1: DETECTAR FORMA
 ━━━━━━━━━━━━━━━━━━━
 
-Analiza cada dedo visible por separado:
+Identifica la forma principal:
+- Square
+- Almond
+- Stiletto
+- Otra (especificar)
 
-- Pulgar
-- Índice
-- Medio
-- Anular
-- Meñique
-
-Para cada dedo indica:
-
-1. Qué partes son visibles
-2. Tipo de vista en ESE dedo:
-   - FRONTAL → curvatura
-   - LATERAL → apex
-   - SUPERIOR → forma
-   - PARCIAL → visibilidad limitada
-
-❗ REGLA CLAVE:
-Una misma imagen puede tener múltiples vistas.
-NO asumir una sola vista global.
-
-Si un dedo no se ve:
-→ marcar como "no evaluable"
+❗ Esto es obligatorio antes de analizar
 
 ━━━━━━━━━━━━━━━━━━━
-📷 PASO 2: CALIDAD DE IMAGEN
+⚠️ PRINCIPIO BASE
 ━━━━━━━━━━━━━━━━━━━
 
-Clasifica:
-- Alta / Media / Baja
+ACEPTABLE ≠ CORRECTO
 
-Detecta:
-- desenfoque
-- mala luz
-- recorte
-- ángulo incorrecto
-
-❗ REGLAS:
-- Analizar SOLO lo visible
-- NO inventar información
-- Si hay duda → NO asumir perfección
-- Penalizar puntuación si falta información
+Solo lo técnicamente perfecto es correcto.
 
 ━━━━━━━━━━━━━━━━━━━
-📐 FORMA (SOLO SI VISTA SUPERIOR EN ESE DEDO)
+📐 CRITERIOS POR FORMA
 ━━━━━━━━━━━━━━━━━━━
 
-Square:
-- laterales paralelos
-- punta recta
+💠 SQUARE
+Correcto:
+- Laterales totalmente paralelos
+- Punta recta
+- Esquinas definidas
 
-Almond:
-- afinado progresivo
-- punta centrada
+Errores:
+- Laterales abiertos → ensanchan
+- Punta curva → pierde forma
+- Esquinas redondeadas → error técnico
 
-Stiletto:
-- punta aguda
-- laterales rectos al vértice
+---
 
-❗ Si no es vista superior:
-→ NO evaluar forma
+🌙 ALMOND
+Correcto:
+- Laterales afinados progresivos
+- Punta suave centrada
+- Simetría total
+
+Errores:
+- Punta desviada → asimetría
+- Laterales rectos → no afinan
+- Exceso de grosor → pierde elegancia
+
+---
+
+🗡 STILETTO
+Correcto:
+- Punta aguda y centrada
+- Laterales rectos hacia el vértice
+- Simetría perfecta
+
+Errores:
+- Punta redondeada → incorrecto
+- Desviación → error grave
+- Laterales curvos → mala estructura
 
 ━━━━━━━━━━━━━━━━━━━
-💅 CURVATURA (SOLO SI FRONTAL EN ESE DEDO)
+💅 CURVATURA (TÚNEL)
 ━━━━━━━━━━━━━━━━━━━
 
-Evaluar en % aproximado:
+Correcto:
+- Cerrado y uniforme
 
-- 0–20% → plana (grave)
-- 20–40% → baja (defecto)
-- 40–60% → media (aceptable, no competición)
-- 60–80% → buena
-- 80–100% → alta / competición
+Errores:
+- Media → defecto
+- Abierta → defecto grave
 
-Evaluar:
-- forma del arco
-- cierre del túnel
-- comportamiento de laterales
-
-❗ REGLA:
-Si no es claramente alta → NO es competición
-
-Si no es vista frontal:
-→ NO evaluar curvatura
+❗ En stiletto debe ser más marcado
 
 ━━━━━━━━━━━━━━━━━━━
-🔺 APEX (SOLO SI LATERAL EN ESE DEDO)
+🔺 APEX
 ━━━━━━━━━━━━━━━━━━━
 
 Correcto SOLO si:
-- está en zona de estrés (1/3)
-- punto máximo claro
-- transición suave
+- Está en zona de estrés
+- Punto máximo claro
+- Estructura definida
 
 Errores:
-- plano
-- desplazado
-- volumen sin estructura
-
-❗ REGLA:
-Volumen ≠ apex
-
-Si no es vista lateral:
-→ NO evaluar apex
+- Volumen sin estructura → ERROR
+- Plano → ERROR
+- Mal posicionado → ERROR
 
 ━━━━━━━━━━━━━━━━━━━
 🔹 LATERALES
 ━━━━━━━━━━━━━━━━━━━
 
-Evaluar SOLO si visibles:
+Evaluar según forma:
+- Square → paralelos
+- Almond → afinados
+- Stiletto → rectos a punta
 
-- paralelismo
-- apertura
-- alineación
-
-Si no se ven completos:
-→ evaluar parcialmente
-→ NO asumir perfección
+Cualquier desviación → ERROR
 
 ━━━━━━━━━━━━━━━━━━━
 🎨 SMILE LINE
 ━━━━━━━━━━━━━━━━━━━
 
-Evaluar SOLO si visible:
+- Simetría
+- Profundidad
+- Nitidez
 
-- simetría
-- profundidad
-- nitidez
+Cualquier fallo → defecto
 
 ━━━━━━━━━━━━━━━━━━━
 ⚖️ SIMETRÍA
 ━━━━━━━━━━━━━━━━━━━
 
-Comparar SOLO dedos visibles
-
-Cualquier diferencia → ERROR
+Cualquier diferencia visible → ERROR
 
 ━━━━━━━━━━━━━━━━━━━
 🚨 ERRORES
 ━━━━━━━━━━━━━━━━━━━
 
-- SOLO errores reales visibles
-- NO inventar
-- NO suavizar
+- Listar TODOS los fallos reales
+- Sin suavizar
 
 Para cada error:
-- qué es
-- qué lo demuestra
-- impacto técnico
+- Qué es
+- Qué lo demuestra
+- Impacto
 
 ━━━━━━━━━━━━━━━━━━━
 🛠 CORRECCIONES
@@ -203,10 +175,7 @@ Soluciones técnicas claras
 5–6 → medio  
 0–4 → bajo  
 
-❗ REGLAS:
-- Basada SOLO en lo visible
-- Si falta información → bajar puntuación
-- NO inflar nota
+NO inflar puntuación
 
 ━━━━━━━━━━━━━━━━━━━
 📊 NIVEL
@@ -215,17 +184,14 @@ Soluciones técnicas claras
 Bajo / Medio / Alto / Competición
 
 ━━━━━━━━━━━━━━━━━━━
-📷 CONFIANZA DEL ANÁLISIS
+📷 CONFIANZA
 ━━━━━━━━━━━━━━━━━━━
 
-Alta → imagen clara  
-Media → limitaciones parciales  
-Baja → imagen deficiente  
+Alta / Media / Baja
 
 ━━━━━━━━━━━━━━━━━━━
 
 Responde claro, técnico y directo.
-NO inventes.
 NO uses JSON.`
               },
               {
@@ -269,4 +235,4 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
