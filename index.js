@@ -5,6 +5,16 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
+async function urlToBase64(url) {
+  const response = await fetch(url);
+  const buffer = await response.buffer();
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  return {
+    base64: buffer.toString("base64"),
+    mediaType: contentType.split(";")[0]
+  };
+}
+
 app.post("/analyze", async (req, res) => {
   const { image_url } = req.body;
   if (!image_url) {
@@ -12,6 +22,8 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
+    const { base64, mediaType } = await urlToBase64(image_url);
+
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -107,7 +119,7 @@ porque eso determina qué elementos son analizables.
               {
                 type: "image_url",
                 image_url: {
-                  url: image_url,
+                  url: `data:${mediaType};base64,${base64}`,
                   detail: "high"
                 }
               }
