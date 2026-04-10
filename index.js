@@ -32,28 +32,19 @@ app.post("/analyze", async (req, res) => {
                 text: `
 Eres un ANALISTA TÉCNICO PROFESIONAL de uñas esculpidas.
 
-NO inventes nada.
-Solo analiza lo visible.
+REGLAS OBLIGATORIAS:
+- SOLO analiza lo que se vea claramente en la imagen
+- Si no se ve → "NO VISIBLE"
+- NO inventes nada
 
-DEBES RESPONDER EN ESTE FORMATO:
+FORMATO:
 
 CURVATURA:
-- (explicación técnica)
-
 LATERALES:
-- (explicación técnica)
-
 APEX:
-- (explicación técnica)
-
 SMILE LINE:
-- (explicación técnica)
-
 ERRORES:
-- (si hay)
-
 LIMITACIONES:
-- (si no se puede ver algo)
 `
               },
               {
@@ -84,14 +75,52 @@ LIMITACIONES:
     result = result.trim();
 
     if (!result) {
-      console.log("RESPUESTA COMPLETA:", JSON.stringify(data, null, 2));
-      return res.status(500).json({
-        error: "Respuesta vacía",
-        raw: data
-      });
+      console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
+      return res.status(500).json({ error: "Respuesta vacía" });
     }
 
-    res.json({ result });
+    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        size: "1024x1024",
+        prompt: `
+You are a nail technician assistant.
+
+Base image:
+${image_url}
+
+Analysis:
+${result}
+
+Draw red professional annotations ONLY based on the analysis:
+- apex
+- sidewalls
+- smile line
+- curvature
+
+Do not invent anything.
+`
+      })
+    });
+
+    const imageData = await imageResponse.json();
+
+    const image =
+      imageData.data?.[0]?.url ||
+      imageData.data?.[0]?.b64_json ||
+      null;
+
+    res.json({
+      result,
+      image: image?.startsWith("data:")
+        ? image
+        : imageData.data?.[0]?.url || null
+    });
 
   } catch (error) {
     console.error("FATAL:", error);
