@@ -27,40 +27,18 @@ ANÁLISIS:
 
 CURVATURA:
 - Estima porcentaje aproximado entre 0% y 50%
-- Justifica según lo visible
 
 LATERALES:
-- Rectos y paralelos
-- Inclinados hacia dentro
-- Abiertos hacia fuera
+- Rectos y paralelos / inclinados / abiertos
 
 APEX:
-- Alto / bajo / inexistente
-- Posición (centrado, adelantado, retrasado)
+- Alto / bajo / inexistente + posición
 
 SMILE LINE:
 - Profunda / media / plana
-- Simetría si es visible
 
 LIMITACIONES:
-- Qué no se puede evaluar y por qué
-
-FORMATO EXACTO:
-
-CURVATURA:
-...
-
-LATERALES:
-...
-
-APEX:
-...
-
-SMILE LINE:
-...
-
-LIMITACIONES:
-...
+- Qué no se puede evaluar
 `;
 
     const analysisResponse = await fetch("https://api.openai.com/v1/responses", {
@@ -77,7 +55,7 @@ LIMITACIONES:
             role: "user",
             content: [
               { type: "input_text", text: analysisPrompt },
-              { type: "input_image", image_url: { url: image_url } }
+              { type: "input_image", image_url: image_url }
             ]
           }
         ],
@@ -88,32 +66,24 @@ LIMITACIONES:
     const analysisData = await analysisResponse.json();
 
     if (!analysisResponse.ok) {
-      console.log("OPENAI ERROR:", analysisData);
+      console.log("OPENAI ERROR:", JSON.stringify(analysisData, null, 2));
       return res.status(500).json({
-        error: "Error en análisis OpenAI",
+        error: "Error en OpenAI",
         details: analysisData
       });
     }
 
-    let analysisText = "";
-
-    const output = analysisData.output || [];
-
-    for (const item of output) {
-      if (!item.content) continue;
-
-      for (const c of item.content) {
-        if (c.type === "output_text" && c.text) {
-          analysisText += c.text;
-        }
-      }
-    }
+    let analysisText =
+      analysisData.output_text ||
+      analysisData.output?.map(o =>
+        o.content?.map(c => c.text || "").join("")
+      ).join("") ||
+      "";
 
     analysisText = analysisText.trim();
 
     if (!analysisText) {
       console.log("RESPUESTA COMPLETA:", JSON.stringify(analysisData, null, 2));
-
       return res.status(500).json({
         error: "Análisis vacío",
         raw: analysisData
@@ -132,16 +102,16 @@ LIMITACIONES:
         prompt: `
 You are editing a nail image.
 
-This is the analysis of the nail:
+Analysis:
 ${analysisText}
 
-Recreate the same nail image and add red technical annotations based only on the analysis.
+Draw red technical annotations ONLY based on this analysis:
+- apex
+- sidewalls
+- smile line
+- curvature
 
-Rules:
-- Do not invent anything not in the analysis
-- Do not distort the finger or nail
-- Use red lines, arrows and labels
-- Mark apex, sidewalls, smile line and curvature based strictly on analysis
+Do not invent anything.
 
 Base image: ${image_url}
 `
@@ -156,7 +126,7 @@ Base image: ${image_url}
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("FATAL ERROR:", error);
     res.status(500).json({ error: "Error interno" });
   }
 });
