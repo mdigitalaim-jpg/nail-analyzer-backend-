@@ -14,7 +14,6 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    // 🔹 PROMPT DE ANÁLISIS
     const analysisPrompt = `
 Eres un ANALISTA TÉCNICO PROFESIONAL en uñas esculpidas.
 
@@ -26,7 +25,7 @@ REGLAS:
 
 ANÁLISIS:
 
-CURVATURA (C-CURVE):
+CURVATURA:
 - Estima porcentaje aproximado entre 0% y 50%
 - Justifica según lo visible
 
@@ -64,7 +63,6 @@ LIMITACIONES:
 ...
 `;
 
-    // 🔹 1. ANÁLISIS
     const analysisResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -79,7 +77,7 @@ LIMITACIONES:
             role: "user",
             content: [
               { type: "input_text", text: analysisPrompt },
-              { type: "input_image", image_url: image_url }
+              { type: "input_image", image_url: { url: image_url } }
             ]
           }
         ],
@@ -90,15 +88,15 @@ LIMITACIONES:
     const analysisData = await analysisResponse.json();
 
     let analysisText = "";
-    if (analysisData.output?.[0]?.content) {
-      for (const c of analysisData.output[0].content) {
+
+    for (const item of analysisData.output || []) {
+      for (const c of item.content || []) {
         if (c.type === "output_text") {
-          analysisText += c.text;
+          analysisText += c.text + "\n";
         }
       }
     }
 
-    // 🔹 2. IMAGEN CON MARCAS ADAPTADAS AL ANÁLISIS
     const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
@@ -114,21 +112,13 @@ You are editing a nail image.
 This is the analysis of the nail:
 ${analysisText}
 
-Now recreate the SAME nail image and draw red technical annotations based ONLY on that analysis.
-
-Instructions:
-- Mark the apex where the analysis indicates
-- Draw sidewalls according to their real direction (parallel, inward, outward)
-- Draw the smile line shape as observed
-- Represent curvature visually based on the percentage (do NOT use fixed values)
-- Adapt everything to THIS specific nail
+Recreate the same nail image and add red technical annotations based only on the analysis.
 
 Rules:
-- Do NOT invent anything not in the analysis
-- Do NOT use generic placements
-- Do NOT distort the finger or nail
-- Keep annotations clean, precise, professional
-- Use red lines, arrows, and labels
+- Do not invent anything not in the analysis
+- Do not distort the finger or nail
+- Use red lines, arrows and labels
+- Mark apex, sidewalls, smile line and curvature based strictly on analysis
 
 Base image: ${image_url}
 `
