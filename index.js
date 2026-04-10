@@ -30,48 +30,35 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un analista técnico profesional de uñas esculpidas.
+Eres un analista técnico de uñas.
 
-Analiza la imagen y responde en este formato EXACTO:
+Devuelve:
 
-CURVATURA:
-- descripción
+1. ANÁLISIS TEXTO:
+- curvatura
+- laterales
+- apex
+- smile line
+- errores
+- limitaciones
 
-LATERALES:
-- descripción
-
-APEX:
-- descripción
-
-SMILE LINE:
-- descripción
-
-ERRORES:
-- lista de errores visibles
-
-LIMITACIONES:
-- qué no se ve claramente
-
-Además, devuelve al final un JSON válido entre triple backticks con coordenadas estimadas (0 a 1) para overlay:
+2. JSON AL FINAL ENTRE TRIPLE BACKTICKS:
 
 \`\`\`json
 {
   "apex": { "x": 0.5, "y": 0.5 },
   "smileLine": [{ "x": 0.2, "y": 0.7 }],
   "sidewalls": {
-    "left": [{ "x": 0.3, "y": 0.9 }, { "x": 0.4, "y": 0.2 }],
-    "right": [{ "x": 0.6, "y": 0.9 }, { "x": 0.7, "y": 0.2 }]
+    "left": [],
+    "right": []
   },
-  "errors": [
-    { "x": 0.4, "y": 0.5, "type": "defect" }
-  ]
+  "errors": []
 }
 \`\`\`
 
 REGLAS:
-- SOLO usa lo visible
-- No inventes detalles ocultos
-- Si algo no se ve, indícalo en limitaciones
+- SOLO lo visible
+- coordenadas 0-1
 `
               },
               {
@@ -88,37 +75,30 @@ REGLAS:
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("OPENAI ERROR:", JSON.stringify(data, null, 2));
-      return res.status(500).json({ error: "Error OpenAI", details: data });
+      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
+      return res.status(500).json({
+        error: "OpenAI falló",
+        details: data
+      });
     }
 
-    // 🔥 EXTRAER TEXTO SIN ROMPER NADA
-    let text = "";
+    const text =
+      data.output_text ||
+      data.output?.flatMap(o =>
+        o.content?.map(c => c.text || "")
+      ).join("") ||
+      "";
 
-    if (data.output_text) {
-      text = data.output_text;
-    } else if (data.output) {
-      for (const item of data.output) {
-        for (const c of item.content || []) {
-          if (c.type === "output_text") {
-            text += c.text;
-          }
-        }
-      }
-    }
-
-    text = text.trim();
-
-    // 🔥 EXTRAER JSON ENTRE ```json ```
+    // extraer JSON sin romper servidor
     let overlay = null;
 
-    try {
-      const match = text.match(/```json([\s\S]*?)```/);
-      if (match) {
+    const match = text.match(/```json([\s\S]*?)```/);
+    if (match) {
+      try {
         overlay = JSON.parse(match[1]);
+      } catch (e) {
+        overlay = null;
       }
-    } catch (e) {
-      overlay = null;
     }
 
     res.json({
@@ -127,14 +107,17 @@ REGLAS:
     });
 
   } catch (error) {
-    console.error("FATAL ERROR:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error("FATAL:", error);
+    res.status(500).json({
+      error: "Error interno",
+      message: error.message
+    });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando");
+  res.send("OK");
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log("RUNNING"));
