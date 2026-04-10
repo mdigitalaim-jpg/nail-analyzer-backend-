@@ -5,17 +5,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "20mb" }));
 
-// Convierte una URL de imagen a base64
-async function urlToBase64(url) {
-  const response = await fetch(url);
-  const buffer = await response.buffer();
-  const contentType = response.headers.get("content-type") || "image/jpeg";
-  return {
-    base64: buffer.toString("base64"),
-    mediaType: contentType.split(";")[0]
-  };
-}
-
 app.post("/analyze", async (req, res) => {
   const { image_url } = req.body;
   if (!image_url) {
@@ -23,9 +12,6 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    // Convertir imagen a base64 para evitar bloqueos de moderación por URL
-    const { base64, mediaType } = await urlToBase64(image_url);
-
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -33,7 +19,7 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4-turbo",
         temperature: 0.1,
         max_tokens: 1500,
         messages: [
@@ -121,7 +107,7 @@ porque eso determina qué elementos son analizables.
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:${mediaType};base64,${base64}`,
+                  url: image_url,
                   detail: "high"
                 }
               }
