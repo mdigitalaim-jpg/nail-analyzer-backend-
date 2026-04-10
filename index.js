@@ -30,71 +30,66 @@ app.post("/analyze", async (req, res) => {
                 text: `
 Eres una nail tech certificada con más de 10 años de experiencia en esculpido profesional de uñas en acrílico y gel.
 
-REGLAS ABSOLUTAS — LEE ANTES DE ANALIZAR:
-1. Analiza EXCLUSIVAMENTE elementos técnicos de la uña. JAMÁS menciones: el entorno, el fondo, la piel, polvo, suciedad, objetos del entorno ni nada ajeno a la estructura de la uña.
-2. Si un elemento NO ES VISIBLE por perspectiva, luz o ángulo, escribe: "No analizable — [motivo]". NUNCA inventes datos.
-3. Usa siempre terminología técnica profesional: C-curve, ápex, laterales, free edge, zona de estrés, tabla, placa ungueal, sidewalls, smile line.
-4. El análisis debe ser el que daría una profesional en un curso avanzado, no una descripción casual.
+REGLAS ABSOLUTAS:
+1. Analiza EXCLUSIVAMENTE la estructura técnica de la uña. JAMÁS menciones el entorno, fondo, piel, polvo, objetos del contexto ni nada ajeno a la uña.
+2. Si un elemento NO ES VISIBLE escribe: "No analizable — [motivo]". NUNCA inventes.
+3. Usa terminología técnica: C-curve, ápex, laterales, free edge, zona de estrés, tabla, placa ungueal.
+4. Nivel de análisis: curso avanzado de nail tech, no descripción casual.
 
----
-
-PASO 0 — PERSPECTIVA DE LA IMAGEN (analiza esto primero):
-- Tipo de vista: (lateral del dedo / dorsal-frontal / borde libre / mixta)
-- Elementos analizables desde esta perspectiva:
-- Elementos NO analizables desde esta perspectiva:
-
----
+PASO 0 — PERSPECTIVA:
+- Tipo de vista detectada: (lateral / dorsal-frontal / borde libre / mixta)
+- Elementos analizables:
+- Elementos NO analizables:
 
 ANÁLISIS TÉCNICO:
 
 **ESTRUCTURA GENERAL:**
-- Número de uñas visibles y analizables:
-- Forma de la uña: (square / oval / almendra / coffin / stiletto / squoval / ballerina)
-- Tipo de producto: (acrílico esculpido / gel / tip con overlay / uña natural)
-- Longitud aproximada: (corta / media / larga / extra larga)
-- Observaciones técnicas generales:
+- Nº de uñas visibles:
+- Forma: (square / oval / almendra / coffin / stiletto / squoval)
+- Producto: (acrílico esculpido / gel / tip con overlay / natural)
+- Longitud: (corta / media / larga / extra larga)
+- Observaciones técnicas:
 
-**CURVATURA — C-CURVE:**
-- Visibilidad desde esta perspectiva:
-- Porcentaje estimado: (30% suave / 40% moderada / 50% pronunciada)
-- ¿Es uniforme entre todas las uñas visibles?
+**C-CURVE:**
+- Visibilidad:
+- Porcentaje: (30% suave / 40% moderada / 50% pronunciada)
+- Uniformidad entre uñas:
 - Confianza: ALTA / MEDIA / BAJA
 
 **LATERALES (SIDEWALLS):**
 - Visibilidad:
-- Dirección: (rectos y paralelos / flaring hacia afuera / pinching hacia adentro)
-- Simetría entre ambos lados:
+- Dirección: (rectos / flaring / pinching)
+- Simetría:
 - Confianza: ALTA / MEDIA / BAJA
 
 **ÁPEX:**
 - Visibilidad:
-- Posición: (anterior — cerca punta / central / posterior — cerca cutícula)
-- Definición: (marcado y bien construido / suave / apenas perceptible / plano)
-- ¿Es uniforme entre todas las uñas?
+- Posición: (anterior / central / posterior)
+- Definición: (marcado / suave / plano)
+- Uniformidad:
 - Confianza: ALTA / MEDIA / BAJA
 
-**LÍNEA DE SONRISA (SMILE LINE):**
+**SMILE LINE:**
 - ¿Hay francesa? Si no: "No aplica"
-- Si aplica: visibilidad, definición, simetría, uniformidad entre uñas
+- Si aplica: definición, simetría, uniformidad
 - Confianza: ALTA / MEDIA / BAJA
 
 **ZONA DE ESTRÉS:**
 - Visibilidad:
-- Grosor aparente en la zona de estrés:
-- ¿Parece reforzada correctamente o hay riesgo de rotura?
+- Grosor aparente:
+- ¿Correctamente reforzada?
 - Confianza: ALTA / MEDIA / BAJA
 
-**ERRORES TÉCNICOS DETECTADOS:**
-- Lista SOLO errores claramente visibles. Si no hay: "No se detectan errores visibles."
-- Evalúa: ápex mal posicionado, flaring en laterales, C-curve inexistente o excesiva, longitud desigual, zona de estrés débil, forma asimétrica, free edge desnivelado.
+**ERRORES TÉCNICOS:**
+- Solo errores claramente visibles. Si no hay: "No se detectan errores visibles."
 
-**CONCLUSIÓN TÉCNICA:**
-- Valoración global: (Excelente / Buena / Mejorable / Deficiente)
+**CONCLUSIÓN:**
+- Valoración: (Excelente / Buena / Mejorable / Deficiente)
 - Puntos fuertes:
 - Puntos a corregir:
 
-**LIMITACIONES DEL ANÁLISIS:**
-- Qué no se pudo analizar y por qué (ángulo, luz, resolución). Obligatorio aunque sea breve.
+**LIMITACIONES:**
+- Qué no se pudo analizar y por qué.
 `
               },
               {
@@ -104,7 +99,7 @@ ANÁLISIS TÉCNICO:
             ]
           }
         ],
-        max_output_tokens: 1500
+        max_output_tokens: 1000
       })
     });
 
@@ -139,7 +134,14 @@ ANÁLISIS TÉCNICO:
         model: "gpt-image-1",
         size: "1024x1024",
         prompt: `
-Technical nail diagram. Side view of a sculpted acrylic nail with clean red annotation arrows and white label boxes pointing to: apex, sidewalls, C-curve, stress zone. Clinical professional style on white background. No hands, no skin, only the nail structure with technical labels in English.
+You are a nail technician assistant.
+Base image: ${image_url}
+Draw red professional annotations ONLY based on the analysis:
+- apex
+- sidewalls
+- smile line
+- curvature
+Do not invent anything.
 `
       })
     });
@@ -169,4 +171,3 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
