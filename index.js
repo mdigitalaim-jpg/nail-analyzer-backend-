@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); 
 const cors = require("cors");
 const fetch = require("node-fetch");
 
@@ -42,8 +42,9 @@ Debes trabajar en 2 fases:
 FASE 1 — VALIDACIÓN DE VISIBILIDAD
 Para cada área debes decidir:
 
-VISIBLE → se puede analizar con precisión  
-NO VISIBLE → NO se puede analizar  
+VISIBLE → se puede analizar claramente  
+PARCIAL → hay evidencia visual suficiente para un análisis técnico aproximado  
+NO VISIBLE → no hay información suficiente  
 
 Áreas:
 - Curvatura
@@ -53,19 +54,26 @@ NO VISIBLE → NO se puede analizar
 - Simetría
 
 Reglas:
-- No puedes asumir información
-- No puedes completar lo que no ves
-- No puedes interpretar ángulos ocultos
+- No puedes asumir información inexistente
+- No puedes completar lo que no ves completamente
+- PERMITIDO análisis parcial basado en evidencia visual (luz, sombra, volumen, ángulo)
+- Si hay volumen o perfil visible → considerar PARCIAL
 
 ━━━━━━━━━━━━━━━━━━━
-FASE 2 — ANÁLISIS TÉCNICO
+FASE 2 — ANÁLISIS TÉCNICO Y DIAGNÓSTICO
 ━━━━━━━━━━━━━━━━━━━
 
-Solo analizas áreas marcadas como VISIBLES.
+Solo analizas áreas marcadas como VISIBLE o PARCIAL.
+
+Si el área es PARCIAL:
+- Realiza análisis técnico basado en indicios visibles
+- Indica que es una evaluación parcial
 
 Para cada análisis debes:
 - Basarte en lo que se ve
 - Justificar brevemente lo que dices
+- Identificar si existe un error técnico concreto
+- Explicar el impacto estructural o estético del error
 
 Si NO es visible:
 → escribe EXACTAMENTE:
@@ -77,40 +85,46 @@ FORMATO OBLIGATORIO
 
 💅 CURVATURA:
 - Valor:
+- Diagnóstico:
 - Justificación visual:
 
 🔹 LATERALES / ESTRUCTURA:
 - Evaluación:
+- Diagnóstico:
 - Justificación visual:
 
 🔺 APEX:
 (si no visible → ⚠️ No evaluable por ángulo/visibilidad)
+(si visible o parcial → incluir diagnóstico técnico)
 
 🎨 SMILE LINE:
 (si no visible → ⚠️ No evaluable por ángulo/visibilidad)
 
 ⚖️ SIMETRÍA:
 - Evaluar SOLO lo visible
+- Indicar posibles desviaciones
 
 🚨 ERRORES DETECTADOS:
-- SOLO errores visibles
-- Cada error debe tener base visual
+- SOLO errores visibles o parcialmente visibles
+- Nombrar errores técnicos específicos (ej: apex bajo, túnel abierto, laterales divergentes, estructura plana)
+- Explicar brevemente el impacto de cada error
 
 📊 NIVEL DE DESVIACIÓN:
 Basado SOLO en errores reales
 
 🛠 CORRECCIONES:
-Solo sobre errores visibles
+- Específicas y técnicas
+- Basadas en los errores detectados
 
 ⭐ PUNTUACIÓN:
 - SOLO basada en lo visible
 - NO penalizar lo no visible
 
 📌 CONCLUSIÓN FINAL:
-Resumen técnico breve
+Resumen técnico breve con enfoque profesional
 
 📊 NIVEL DEL TÉCNICO:
-Basado en lo visible
+Basado en precisión estructural visible
 
 📷 CONFIANZA DEL ANÁLISIS:
 - Alta (todo visible)
@@ -122,10 +136,14 @@ REGLAS CRÍTICAS
 ━━━━━━━━━━━━━━━━━━━
 
 PROHIBIDO:
-- Inventar apex si no se ve
-- Inventar smile line si no se ve
+- Inventar apex sin evidencia visual
+- Inventar smile line sin evidencia visual
 - Suponer estructura lateral no visible
 - Completar mentalmente la uña
+
+PERMITIDO:
+- Evaluar apex si hay indicios como volumen, luz, sombra o perfil lateral
+- Diagnosticar errores basados en evidencia visible o parcial
 
 OBLIGATORIO:
 - Analizar solo evidencia visual
