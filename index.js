@@ -3,6 +3,7 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
@@ -30,49 +31,58 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un ANALISTA TÉCNICO PROFESIONAL en uñas esculpidas.
+Eres un analista técnico profesional de uñas esculpidas.
 
-REGLAS:
-- Analiza SOLO lo visible
-- NO inventes información
-- Si algo no se ve, dilo claramente
-- Sé técnico y preciso
-
-FORMATO OBLIGATORIO:
+ANÁLISIS OBLIGATORIO:
 
 CURVATURA:
 - porcentaje estimado
-- explicación
+- explicación técnica
 
 LATERALES:
-- descripción técnica
+- paralelos / abiertos / cerrados
 
 APEX:
-- posición y calidad
+- posición y calidad estructural
 
 SMILE LINE:
 - forma y simetría
 
 ERRORES:
-- lista de fallos visibles reales
+- solo visibles
 
 LIMITACIONES:
-- qué no se puede ver con claridad
+- qué no se ve
 
-IMPORTANTE:
-Al final del texto incluye ESTE JSON EXACTO entre ```json:
+AL FINAL DEL TODO DEVUELVE ESTE JSON ENTRE TRIPLE BACKTICKS:
 
+\`\`\`json
 {
   "apex": { "x": 0.5, "y": 0.5 },
-  "smileLine": [{ "x": 0.2, "y": 0.7 }],
+  "smileLine": [
+    { "x": 0.2, "y": 0.7 },
+    { "x": 0.5, "y": 0.8 }
+  ],
   "sidewalls": {
-    "left": [{ "x": 0.3, "y": 0.9 }, { "x": 0.4, "y": 0.2 }],
-    "right": [{ "x": 0.6, "y": 0.9 }, { "x": 0.7, "y": 0.2 }]
+    "left": [
+      { "x": 0.3, "y": 0.9 },
+      { "x": 0.4, "y": 0.2 }
+    ],
+    "right": [
+      { "x": 0.6, "y": 0.9 },
+      { "x": 0.7, "y": 0.2 }
+    ]
   },
   "errors": [
     { "x": 0.4, "y": 0.5, "type": "defect" }
   ]
 }
+\`\`\`
+
+REGLAS:
+- SOLO lo visible
+- NO inventes
+- Si no se ve algo, dilo en limitaciones
 `
               },
               {
@@ -89,14 +99,13 @@ Al final del texto incluye ESTE JSON EXACTO entre ```json:
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
+      console.error("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({
         error: "OpenAI error",
         details: data
       });
     }
 
-    // EXTRACCIÓN SEGURA
     let text =
       data.output_text ||
       data.output?.flatMap(o =>
@@ -106,10 +115,10 @@ Al final del texto incluye ESTE JSON EXACTO entre ```json:
 
     text = text.trim();
 
-    // EXTRACCIÓN JSON ROBUSTA
     let overlay = null;
 
     const match = text.match(/```json([\s\S]*?)```/);
+
     if (match) {
       try {
         overlay = JSON.parse(match[1].trim());
@@ -126,7 +135,7 @@ Al final del texto incluye ESTE JSON EXACTO entre ```json:
   } catch (error) {
     console.error("FATAL ERROR:", error);
     return res.status(500).json({
-      error: "Error interno del servidor",
+      error: "Error interno",
       message: error.message
     });
   }
@@ -137,4 +146,4 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log("RUNNING"));
