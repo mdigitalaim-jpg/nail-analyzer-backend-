@@ -30,23 +30,19 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Analiza esta uña como inspector técnico profesional.
+Analiza esta imagen de uñas.
 
-DEVUELVE SOLO JSON.
+Devuelve SOLO un JSON válido.
 
+Si no estás seguro, usa null.
+
+Formato:
 {
   "apex": { "x": 0.5, "y": 0.3 },
-  "smileLine": [{ "x": 0.2, "y": 0.6 }],
-  "sidewalls": {
-    "left": [],
-    "right": []
-  },
+  "smileLine": [],
+  "sidewalls": { "left": [], "right": [] },
   "errors": []
 }
-
-REGLAS:
-- SOLO lo visible
-- coordenadas 0 a 1
 `
               },
               {
@@ -63,7 +59,6 @@ REGLAS:
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({
         error: "OpenAI error",
         details: data
@@ -72,23 +67,22 @@ REGLAS:
 
     const text =
       data.output_text ||
-      data.output?.flatMap(o =>
-        o.content?.map(c => c.text || "")
-      ).join("") ||
+      data.output?.[0]?.content?.[0]?.text ||
       "";
 
-    let json;
+    // 🔴 NO romper si no es JSON perfecto
+    let json = null;
+
     try {
       json = JSON.parse(text);
     } catch (e) {
-      return res.status(500).json({
-        error: "JSON inválido devuelto por modelo",
+      console.log("NO JSON PERFECTO, DEVUELVO TEXTO");
+      return res.json({
         raw: text
       });
     }
 
     res.json({
-      image_url,
       overlay: json
     });
 
