@@ -14,6 +14,7 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
+    // 1. UN SOLO MODELO (visión + razonamiento)
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -21,7 +22,7 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         temperature: 0.2,
         input: [
           {
@@ -30,38 +31,24 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un ANALISTA TÉCNICO PROFESIONAL de uñas esculpidas.
+Analiza esta uña como inspector técnico profesional.
 
-REGLAS:
-- Analiza SOLO lo visible en la imagen
-- No inventes detalles que no existan
-- PERO debes dar una mejor estimación cuando algo sea parcialmente visible
-- Usa: ALTA / MEDIA / BAJA confianza
-- Solo usa "NO VISIBLE" si realmente no se puede ver nada
+1. Detecta:
+- curvatura
+- apex
+- laterales
+- smile line
 
-FORMATO OBLIGATORIO:
+2. Luego devuelve instrucciones EXACTAS de dibujo sobre la imagen:
+- dónde poner líneas rojas
+- dónde marcar errores
+- qué zonas resaltar
 
-CURVATURA:
-- descripción
-- nivel de confianza (ALTA / MEDIA / BAJA)
+IMPORTANTE:
+- No inventes
+- Si no se ve algo, no lo marques
 
-LATERALES:
-- descripción
-- nivel de confianza
-
-APEX:
-- descripción
-- nivel de confianza
-
-SMILE LINE:
-- descripción
-- nivel de confianza
-
-ERRORES:
-- solo errores visibles reales
-
-LIMITACIONES:
-- qué zonas no se ven claramente
+RESPONDE EN FORMATO CLARO.
 `
               },
               {
@@ -71,32 +58,25 @@ LIMITACIONES:
             ]
           }
         ],
-        max_output_tokens: 1000
+        max_output_tokens: 1200
       })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
-      return res.status(500).json({ error: "Error OpenAI", details: data });
+      return res.status(500).json({ error: data });
     }
 
-    let result =
+    const analysis =
       data.output_text ||
       data.output?.flatMap(o =>
         o.content?.map(c => c.text || "")
       ).join("") ||
       "";
 
-    result = result.trim();
-
-    if (!result) {
-      console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
-      return res.status(500).json({ error: "Respuesta vacía" });
-    }
-
-    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+    // 2. GENERACIÓN DIRECTA DE IMAGEN ANOTADA
+    const image = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -106,48 +86,42 @@ LIMITACIONES:
         model: "gpt-image-1",
         size: "1024x1024",
         prompt: `
-You are a nail technician assistant.
+Edit this nail image.
 
-Base image:
+BASE IMAGE:
 ${image_url}
 
-Analysis:
-${result}
+TECHNICAL ANALYSIS:
+${analysis}
 
-Draw red professional annotations ONLY based on the analysis:
-- apex
-- sidewalls
-- smile line
-- curvature
+Draw professional red annotations directly on the nail:
+- apex point
+- sidewall lines
+- smile line curve
+- curvature guide
 
-Do not invent anything.
+Keep it precise and realistic.
+Do NOT invent structures not visible.
 `
       })
     });
 
-    const imageData = await imageResponse.json();
+    const imgData = await image.json();
 
-    const image =
-      imageData.data?.[0]?.url ||
-      imageData.data?.[0]?.b64_json ||
+    const finalImage =
+      imgData.data?.[0]?.url ||
+      imgData.data?.[0]?.b64_json ||
       null;
 
     res.json({
-      result,
-      image: image?.startsWith("data:")
-        ? image
-        : imageData.data?.[0]?.url || null
+      analysis,
+      image: finalImage
     });
 
-  } catch (error) {
-    console.error("FATAL:", error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Error interno" });
   }
 });
 
-app.get("/", (req, res) => {
-  res.send("Servidor funcionando");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(3000, () => console.log("Running"));
