@@ -34,44 +34,24 @@ Analiza esta uña como inspector técnico profesional.
 
 DEVUELVE SOLO JSON.
 
-Detecta y marca en coordenadas relativas (0 a 1):
-
 {
-  "curvature": {
-    "value": "",
-    "confidence": "",
-    "area": "polygon or line points"
-  },
-  "apex": {
-    "point": { "x": 0.5, "y": 0.3 },
-    "confidence": ""
-  },
+  "apex": { "x": 0.5, "y": 0.3 },
+  "smileLine": [{ "x": 0.2, "y": 0.6 }],
   "sidewalls": {
-    "left": [{"x":0,"y":0},{"x":0,"y":0}],
-    "right": [{"x":0,"y":0},{"x":0,"y":0}]
+    "left": [],
+    "right": []
   },
-  "smileLine": {
-    "curve": [{"x":0,"y":0}]
-  },
-  "errors": [
-    {
-      "type": "",
-      "location": {"x":0,"y":0},
-      "severity": ""
-    }
-  ]
+  "errors": []
 }
 
 REGLAS:
-- SOLO usa lo visible
-- Si no se ve algo, no lo incluyas
-- Coordenadas normalizadas (0 a 1)
-- Precisión máxima
+- SOLO lo visible
+- coordenadas 0 a 1
 `
               },
               {
                 type: "input_image",
-                image_url: image_url
+                image_url: { url: image_url }
               }
             ]
           }
@@ -83,6 +63,7 @@ REGLAS:
     const data = await response.json();
 
     if (!response.ok) {
+      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({
         error: "OpenAI error",
         details: data
@@ -101,7 +82,7 @@ REGLAS:
       json = JSON.parse(text);
     } catch (e) {
       return res.status(500).json({
-        error: "Respuesta no es JSON válido",
+        error: "JSON inválido devuelto por modelo",
         raw: text
       });
     }
