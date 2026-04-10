@@ -23,7 +23,6 @@ app.post("/analyze", async (req, res) => {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         temperature: 0.2,
-
         input: [
           {
             role: "user",
@@ -31,33 +30,28 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Analiza la imagen de uñas de forma estrictamente visual.
+Analiza la imagen de uñas SOLO con base en lo visible.
 
-🚨 REGLAS:
-- Solo usa lo visible en la imagen
-- No inventes formas (stiletto, almond, etc)
-- No inventes medidas en mm o porcentajes exactos
-- No describas fondo ni entorno
-- Si algo no es claro → "no determinado"
+REGLAS:
+- No inventes información
+- No uses conocimientos externos
+- No añadas formas si no son claras
+- No des porcentajes ni mm exactos si no se pueden ver
+- Si algo no se ve: "no visible"
 
-────────────────────────────
-💅 ANÁLISIS OBLIGATORIO
-────────────────────────────
+ANÁLISIS:
 
-- Curvatura: baja / media / alta (o no determinado)
-- Borde libre: corto / medio / largo
-- Forma: solo si es evidente
+- Curvatura: baja / media / alta / no visible
+- Borde libre: corto / medio / largo / no visible
+- Forma: solo si es claramente evidente, si no "no determinada"
 - Alineación: recta / inclinada
 - Apex: visible / dudoso / no visible
-- Laterales: paralelos / abiertos / cerrados si se ven
+- Laterales: paralelos / abiertos / cerrados (si se ven)
 - Smile line: definida / parcial / no visible
 - Calidad del producto: brillo, burbujas si se ven
 - Cutícula: limpia / con exceso / no visible
 
-────────────────────────────
-📊 FORMATO
-────────────────────────────
-
+FORMATO DE RESPUESTA:
 Descripción:
 Análisis:
 Observaciones:
@@ -70,39 +64,37 @@ Conclusión:
                   url: image_url
                 }
               }
-            ],
-          },
+            ]
+          }
         ],
-
-        max_output_tokens: 1000,
+        max_output_tokens: 1000
       }),
     });
 
     const data = await response.json();
 
-    // 🔥 EXTRACCIÓN ROBUSTA (ESTO ES LO QUE TE FALTABA)
-    let contentText = "";
+    let result = "";
 
     if (data.output && Array.isArray(data.output)) {
       for (const item of data.output) {
         if (item.content && Array.isArray(item.content)) {
           for (const c of item.content) {
             if (c.text) {
-              contentText += c.text;
+              result += c.text;
             }
           }
         }
       }
     }
 
-    if (!contentText) {
-      console.error("Respuesta OpenAI vacía:", JSON.stringify(data, null, 2));
+    if (!result) {
       return res.status(500).json({
-        error: "OpenAI no devolvió contenido",
+        error: "No se recibió respuesta de OpenAI",
+        raw: data
       });
     }
 
-    res.json({ result: contentText });
+    res.json({ result });
 
   } catch (error) {
     console.error(error);
