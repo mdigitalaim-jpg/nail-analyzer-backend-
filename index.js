@@ -14,119 +14,87 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    const analysisPrompt = `
-Eres un ANALISTA TÉCNICO PROFESIONAL en uñas esculpidas.
-
-REGLAS:
-- Analiza SOLO lo visible en la imagen
-- PROHIBIDO inventar
-- Si algo no se ve claramente → indícalo como limitación
-- Sé técnico, directo y preciso
-
-ANÁLISIS:
-
-CURVATURA:
-- Estima porcentaje aproximado entre 0% y 50%
-
-LATERALES:
-- Rectos y paralelos / inclinados / abiertos
-
-APEX:
-- Alto / bajo / inexistente + posición
-
-SMILE LINE:
-- Profunda / media / plana
-
-LIMITACIONES:
-- Qué no se puede evaluar
-`;
-
-    const analysisResponse = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         temperature: 0.2,
         input: [
           {
             role: "user",
             content: [
-              { type: "input_text", text: analysisPrompt },
-              { type: "input_image", image_url: image_url }
+              {
+                type: "input_text",
+                text: `
+Eres un ANALISTA TÉCNICO PROFESIONAL de uñas esculpidas.
+
+NO inventes nada.
+Solo analiza lo visible.
+
+DEBES RESPONDER EN ESTE FORMATO:
+
+CURVATURA:
+- (explicación técnica)
+
+LATERALES:
+- (explicación técnica)
+
+APEX:
+- (explicación técnica)
+
+SMILE LINE:
+- (explicación técnica)
+
+ERRORES:
+- (si hay)
+
+LIMITACIONES:
+- (si no se puede ver algo)
+`
+              },
+              {
+                type: "input_image",
+                image_url: image_url
+              }
             ]
           }
         ],
-        max_output_tokens: 800
+        max_output_tokens: 1000
       })
     });
 
-    const analysisData = await analysisResponse.json();
+    const data = await response.json();
 
-    if (!analysisResponse.ok) {
-      console.log("OPENAI ERROR:", JSON.stringify(analysisData, null, 2));
-      return res.status(500).json({
-        error: "Error en OpenAI",
-        details: analysisData
-      });
+    if (!response.ok) {
+      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
+      return res.status(500).json({ error: "Error OpenAI", details: data });
     }
 
-    let analysisText =
-      analysisData.output_text ||
-      analysisData.output?.map(o =>
-        o.content?.map(c => c.text || "").join("")
+    let result =
+      data.output_text ||
+      data.output?.flatMap(o =>
+        o.content?.map(c => c.text || "")
       ).join("") ||
       "";
 
-    analysisText = analysisText.trim();
+    result = result.trim();
 
-    if (!analysisText) {
-      console.log("RESPUESTA COMPLETA:", JSON.stringify(analysisData, null, 2));
+    if (!result) {
+      console.log("RESPUESTA COMPLETA:", JSON.stringify(data, null, 2));
       return res.status(500).json({
-        error: "Análisis vacío",
-        raw: analysisData
+        error: "Respuesta vacía",
+        raw: data
       });
     }
 
-    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        size: "1024x1024",
-        prompt: `
-You are editing a nail image.
-
-Analysis:
-${analysisText}
-
-Draw red technical annotations ONLY based on this analysis:
-- apex
-- sidewalls
-- smile line
-- curvature
-
-Do not invent anything.
-
-Base image: ${image_url}
-`
-      })
-    });
-
-    const imageData = await imageResponse.json();
-
-    res.json({
-      analysis: analysisText,
-      image: imageData.data?.[0]?.url || null
-    });
+    res.json({ result });
 
   } catch (error) {
-    console.error("FATAL ERROR:", error);
+    console.error("FATAL:", error);
     res.status(500).json({ error: "Error interno" });
   }
 });
