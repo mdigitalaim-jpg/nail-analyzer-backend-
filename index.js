@@ -31,93 +31,69 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un JUEZ TÉCNICO INTERNACIONAL especializado en uñas esculpidas.
-
-Tu trabajo es analizar la imagen de forma estrictamente VISUAL, realista y basada únicamente en evidencia.
+Analiza la imagen de uñas de forma técnica, objetiva y basada SOLO en lo visible.
 
 ────────────────────────────
-🚨 REGLA ABSOLUTA
+🚨 REGLA PRINCIPAL
 ────────────────────────────
-NO puedes inventar, asumir ni completar información.
+- NO inventes información
+- NO asumas lo que no se ve
+- NO describas el entorno (mesa, polvo, fondo)
+- SOLO analiza uñas
 
-Si algo no se ve claramente → debes decir: "NO VISIBLE / NO EVALUABLE"
-
-NO estás autorizado a suponer nada.
+Si algo no se ve claramente → escribe "NO VISIBLE"
 
 ────────────────────────────
-🧠 PRINCIPIO FUNDAMENTAL
+🧠 PRINCIPIO DE ANÁLISIS
 ────────────────────────────
 👉 visible = se analiza
 👉 parcial = análisis parcial
-👉 no visible = se indica claramente
-
-Nunca es todo o nada.
+👉 no visible = se indica
 
 ────────────────────────────
-💅 ANÁLISIS TÉCNICO OBLIGATORIO (SI ES VISIBLE)
+💅 ANÁLISIS TÉCNICO (SI ES VISIBLE)
 ────────────────────────────
 
-Debes analizar TODO lo que sea visible en la imagen:
-
-1. CURVATURA
+CURVATURA:
 - estimación en rango (ej: 30–40%, 40–50%, 50–60%)
-- indicar si es uniforme o si hay inclinación lateral
+- si no es clara → NO VISIBLE
 
-2. BORDE LIBRE
+BORDE LIBRE:
 - estimación en mm (ej: 0.5mm, 1mm, 2mm)
-- indicar si es consistente o irregular
+- si no hay referencia → NO VISIBLE
 
-3. FORMA DE UÑA
+FORMA:
 - square / almond / stiletto / coffin / otra
-- justificar SOLO si se ve
+- solo si es evidente
 
-4. ALINEACIÓN DE UÑAS
-- rectas / inclinadas hacia arriba / hacia abajo
-- detectar si alguna está más alta o baja
+ALINEACIÓN:
+- rectas / inclinadas arriba / abajo
+- solo si se ve claramente
 
-5. APEX
-- correcto / desplazado / plano / no visible
-- SOLO si hay evidencia visual
+APEX:
+- correcto / desplazado / plano / NO VISIBLE
 
-6. LATERALES
+LATERALES:
 - paralelos / abiertos / cerrados
-- inclinación hacia arriba o abajo si se aprecia
+- solo si se ven
 
-7. SMILE LINE
-- definida / poco definida / irregular / no visible
-- simetría de puntos de sonrisa
+SMILE LINE:
+- definida / irregular / NO VISIBLE
 
-8. CALIDAD DEL PRODUCTO
-- presencia de burbujas (si visibles)
+CALIDAD DEL PRODUCTO:
+- burbujas (si se ven)
 - brillo (alto / medio / bajo)
-- exceso de producto en cutícula o piel
+- exceso de producto (si se ve)
 
-9. ZONA DE CUTÍCULA
-- limpia / con exceso de producto / irregular
-- SOLO si es visible
-
-────────────────────────────
-📷 MULTI-UÑA O PARCIAL
-────────────────────────────
-- Si solo se ve 1 uña → analiza SOLO esa
-- Si se ven varias → analiza cada una por separado
-- Si algo no se ve → NO INVENTAR
+CUTÍCULA:
+- limpia / con exceso / NO VISIBLE
 
 ────────────────────────────
-🚫 PROHIBIDO
-────────────────────────────
-- Inventar medidas exactas sin base visual
-- Suponer lo que no se ve
-- Decir “perfecto” sin evidencia completa
-- Completar información faltante con lógica
-- Ignorar partes visibles aunque sean pequeñas
-
-────────────────────────────
-📊 FORMATO DE RESPUESTA OBLIGATORIO
+📊 FORMATO DE RESPUESTA
 ────────────────────────────
 
 DESCRIPCIÓN GENERAL:
-(lo que se ve sin interpretar)
+(lo visible sin interpretar)
 
 ANÁLISIS TÉCNICO:
 - Curvatura:
@@ -127,26 +103,14 @@ ANÁLISIS TÉCNICO:
 - Apex:
 - Laterales:
 - Smile line:
-- Calidad del producto:
+- Calidad:
 - Cutícula:
 
 ELEMENTOS NO VISIBLES:
 (lista clara)
 
-ERRORES DETECTADOS:
-(solo si hay evidencia)
-
 CONCLUSIÓN:
-(resumen técnico realista sin exagerar)
-
-────────────────────────────
-🧾 ESTILO
-────────────────────────────
-- Técnico
-- Humano
-- Realista
-- Sin inventar
-- Sin suavizar errores
+(resumen técnico realista basado solo en evidencia visible)
                 `,
               },
               {
