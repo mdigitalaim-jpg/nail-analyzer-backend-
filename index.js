@@ -87,14 +87,37 @@ LIMITACIONES:
 
     const analysisData = await analysisResponse.json();
 
+    if (!analysisResponse.ok) {
+      console.log("OPENAI ERROR:", analysisData);
+      return res.status(500).json({
+        error: "Error en análisis OpenAI",
+        details: analysisData
+      });
+    }
+
     let analysisText = "";
 
-    for (const item of analysisData.output || []) {
-      for (const c of item.content || []) {
-        if (c.type === "output_text") {
-          analysisText += c.text + "\n";
+    const output = analysisData.output || [];
+
+    for (const item of output) {
+      if (!item.content) continue;
+
+      for (const c of item.content) {
+        if (c.type === "output_text" && c.text) {
+          analysisText += c.text;
         }
       }
+    }
+
+    analysisText = analysisText.trim();
+
+    if (!analysisText) {
+      console.log("RESPUESTA COMPLETA:", JSON.stringify(analysisData, null, 2));
+
+      return res.status(500).json({
+        error: "Análisis vacío",
+        raw: analysisData
+      });
     }
 
     const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
