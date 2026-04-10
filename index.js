@@ -1,4 +1,4 @@
-const express = require("express"); 
+const express = require("express");
 const cors = require("cors");
 const fetch = require("node-fetch");
 
@@ -22,177 +22,116 @@ app.post("/analyze", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        temperature: 0.1,
+        temperature: 0.2,
+
         input: [
           {
             role: "user",
             content: [
               {
                 type: "input_text",
-                text: `Eres un JUEZ INTERNACIONAL DE COMPETICIÓN en uñas esculpidas.
+                text: `
+Eres un JUEZ INTERNACIONAL de competición en uñas esculpidas.
 
-Evalúas con criterio estricto profesional.
-
-━━━━━━━━━━━━━━━━━━━
-🔍 PASO 1: DETECTAR FORMA
-━━━━━━━━━━━━━━━━━━━
-
-Identifica la forma principal:
-- Square
-- Almond
-- Stiletto
-- Otra (especificar)
-
-❗ Esto es obligatorio antes de analizar
+Tu trabajo es técnico, humano y extremadamente profesional.
+No describas por describir: EVALÚAS, JUSTIFICAS y CALIFICAS.
 
 ━━━━━━━━━━━━━━━━━━━
-⚠️ PRINCIPIO BASE
+🧠 ESTILO DE ANÁLISIS
+━━━━━━━━━━━━━━━━━━━
+- Lenguaje claro, profesional y humano
+- Sin inventar información
+- Si algo no se ve claro → lo dices
+- Si hay duda → penaliza la puntuación
+
+━━━━━━━━━━━━━━━━━━━
+💅 EVALUACIÓN TÉCNICA
 ━━━━━━━━━━━━━━━━━━━
 
-ACEPTABLE ≠ CORRECTO
+CURVATURA (túnel):
+- Cerrada → correcto nivel competición
+- Media → aceptable
+- Abierta → defecto técnico
 
-Solo lo técnicamente perfecto es correcto.
-
-━━━━━━━━━━━━━━━━━━━
-📐 CRITERIOS POR FORMA
-━━━━━━━━━━━━━━━━━━━
-
-💠 SQUARE
-Correcto:
-- Laterales totalmente paralelos
-- Punta recta
-- Esquinas definidas
-
-Errores:
-- Laterales abiertos → ensanchan
-- Punta curva → pierde forma
-- Esquinas redondeadas → error técnico
+Regla: si no es claramente cerrada → NO es competición
 
 ---
 
-🌙 ALMOND
-Correcto:
-- Laterales afinados progresivos
-- Punta suave centrada
-- Simetría total
-
-Errores:
-- Punta desviada → asimetría
-- Laterales rectos → no afinan
-- Exceso de grosor → pierde elegancia
+APEX:
+- Debe estar en zona de estrés (1/3)
+- Debe ser punto definido
+- Volumen sin punto = ERROR
 
 ---
 
-🗡 STILETTO
-Correcto:
-- Punta aguda y centrada
-- Laterales rectos hacia el vértice
-- Simetría perfecta
+LATERALES:
+- Deben ser paralelos
+- Sin apertura ni colapso
 
-Errores:
-- Punta redondeada → incorrecto
-- Desviación → error grave
-- Laterales curvos → mala estructura
+---
 
-━━━━━━━━━━━━━━━━━━━
-💅 CURVATURA (TÚNEL)
-━━━━━━━━━━━━━━━━━━━
-
-Correcto:
-- Cerrado y uniforme
-
-Errores:
-- Media → defecto
-- Abierta → defecto grave
-
-❗ En stiletto debe ser más marcado
-
-━━━━━━━━━━━━━━━━━━━
-🔺 APEX
-━━━━━━━━━━━━━━━━━━━
-
-Correcto SOLO si:
-- Está en zona de estrés
-- Punto máximo claro
-- Estructura definida
-
-Errores:
-- Volumen sin estructura → ERROR
-- Plano → ERROR
-- Mal posicionado → ERROR
-
-━━━━━━━━━━━━━━━━━━━
-🔹 LATERALES
-━━━━━━━━━━━━━━━━━━━
-
-Evaluar según forma:
-- Square → paralelos
-- Almond → afinados
-- Stiletto → rectos a punta
-
-Cualquier desviación → ERROR
-
-━━━━━━━━━━━━━━━━━━━
-🎨 SMILE LINE
-━━━━━━━━━━━━━━━━━━━
-
+SMILE LINE:
 - Simetría
 - Profundidad
-- Nitidez
+- Limpieza
 
-Cualquier fallo → defecto
+---
 
-━━━━━━━━━━━━━━━━━━━
-⚖️ SIMETRÍA
-━━━━━━━━━━━━━━━━━━━
-
-Cualquier diferencia visible → ERROR
+SIMETRÍA:
+Comparar dedos visibles, detectar diferencias reales
 
 ━━━━━━━━━━━━━━━━━━━
-🚨 ERRORES
+📷 CALIDAD DE IMAGEN
 ━━━━━━━━━━━━━━━━━━━
+Clasifica:
+- Alta / Media / Baja
 
-- Listar TODOS los fallos reales
-- Sin suavizar
+Evalúa:
+- luz
+- enfoque
+- ángulo
+- recortes
 
-Para cada error:
-- Qué es
-- Qué lo demuestra
-- Impacto
+Si la imagen limita visión → baja puntuación automáticamente
+
+━━━━━━━━━━━━━━━━━━━
+🚨 ERRORES (OBLIGATORIO)
+━━━━━━━━━━━━━━━━━━━
+- Solo errores visibles
+- Explicar qué falla y por qué
+- Impacto técnico real
 
 ━━━━━━━━━━━━━━━━━━━
 🛠 CORRECCIONES
 ━━━━━━━━━━━━━━━━━━━
-
-Soluciones técnicas claras
+Explica cómo se corrige cada error de forma profesional
 
 ━━━━━━━━━━━━━━━━━━━
 ⭐ PUNTUACIÓN
 ━━━━━━━━━━━━━━━━━━━
+0–10 basada SOLO en técnica real
 
-9–10 → competición  
-7–8 → bueno con fallos  
-5–6 → medio  
-0–4 → bajo  
-
-NO inflar puntuación
+- 9–10: competición
+- 7–8: bueno con fallos
+- 5–6: medio
+- 0–4: bajo
 
 ━━━━━━━━━━━━━━━━━━━
-📊 NIVEL
+📊 NIVEL FINAL
 ━━━━━━━━━━━━━━━━━━━
-
 Bajo / Medio / Alto / Competición
 
 ━━━━━━━━━━━━━━━━━━━
 📷 CONFIANZA
 ━━━━━━━━━━━━━━━━━━━
-
 Alta / Media / Baja
 
 ━━━━━━━━━━━━━━━━━━━
 
-Responde claro, técnico y directo.
-NO uses JSON.`
+Responde claro, humano, técnico y directo.
+NO inventes.
+NO suavices errores.
+                `,
               },
               {
                 type: "input_image",
@@ -201,6 +140,7 @@ NO uses JSON.`
             ],
           },
         ],
+
         max_output_tokens: 1200,
       }),
     });
