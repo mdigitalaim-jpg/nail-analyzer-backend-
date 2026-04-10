@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch"); // Asegúrate de tenerlo instalado
+const fetch = require("node-fetch");
 
 const app = express();
 app.use(cors());
@@ -21,47 +21,63 @@ app.post("/analyze", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
+        temperature: 0.2,
         input: [
           {
             role: "user",
             content: [
               {
                 type: "input_text",
-                text: `Analiza la(s) uña(s) de esta imagen desde un punto de vista técnico profesional de manicura.
+                text: `Eres un sistema profesional de evaluación técnica de uñas esculpidas.
 
-Quiero que evalúes:
+Analiza la imagen de forma técnica y profesional.
 
-1. Curvatura (C-curve):
-- Estima el porcentaje aproximado (30%, 40%, 50%, 60%, etc.)
-- Explica brevemente por qué
+Incluye SIEMPRE:
 
-2. Inclinación:
-- Indica si la uña está recta, hacia arriba o hacia abajo
-- Especifica si la inclinación es leve, moderada o pronunciada
+💅 CURVATURA:
+- Porcentaje estimado
+- Explicación breve
 
-3. Simetría:
-- Evalúa si la curvatura está equilibrada en ambos lados
-- Indica si hay colapso lateral o desbalance
+🔹 ANÁLISIS ESTRUCTURAL:
+Laterales, paralelismo, dirección, grosor y balance
 
-4. Uniformidad (si hay varias uñas):
-- Compara entre ellas y menciona diferencias
+🔺 APEX:
+Posición, altura, transición y soporte
 
-5. Conclusión:
-- Resume en valores claros (curvatura %, inclinación, calidad general)
+🎨 SMILE LINE:
+Simetría, definición y consistencia
+
+⚖️ SIMETRÍA GENERAL:
+Uniformidad, alineación y balance
+
+🚨 ERRORES DETECTADOS:
+Lista clara de fallos
+
+📊 NIVEL DE DESVIACIÓN:
+Micro / Leve / Moderado / Crítico
+
+🛠 CORRECCIONES:
+Qué mejorar (prioridad alta, media, baja)
+
+⭐ PUNTUACIÓN:
+Estructura, Apex, Smile line, Simetría, Técnica general (sobre 10)
+
+📌 CONCLUSIÓN FINAL:
+Resumen técnico corto
+
+📊 NIVEL DEL TÉCNICO:
+Principiante / Intermedio / Avanzado / Profesional
+
+📷 CONFIANZA:
+Alta / Media / Baja
 
 IMPORTANTE:
-- Da estimaciones visuales profesionales, no genéricas
-- Sé preciso, directo y técnico
-- Responde SOLO en JSON válido con esta estructura:
-
-{
-  "curvatura": { "porcentaje": number, "explicacion": string },
-  "inclinacion": { "direccion": "recta" | "arriba" | "abajo", "grado": "leve" | "moderada" | "pronunciada" },
-  "simetria": { "estado": string, "detalle": string },
-  "uniformidad": string,
-  "conclusion": string
-}`
+- Responde SOLO en TEXTO
+- Usa emojis y formato claro
+- No uses JSON
+- No devuelvas objetos
+- Sé técnico, preciso y directo`
               },
               {
                 type: "input_image",
@@ -70,19 +86,18 @@ IMPORTANTE:
             ],
           },
         ],
-        max_output_tokens: 1000,
+        max_output_tokens: 1200,
       }),
     });
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("OpenAI error:", err);
-      return res.status(500).json({ error: "Error al analizar la imagen" });
+      console.error(err);
+      return res.status(500).json({ error: "Error OpenAI" });
     }
 
     const data = await response.json();
 
-    // Manejo seguro para GPT-4o: extrae texto aunque haya contenido extra
     let contentText = "";
     if (data.output && data.output.length > 0 && data.output[0].content) {
       for (const c of data.output[0].content) {
@@ -92,29 +107,11 @@ IMPORTANTE:
       }
     }
 
-    if (!contentText) {
-      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
-    }
-
-    // Extrae JSON aunque haya texto extra antes/después
-    let result;
-    try {
-      const jsonMatch = contentText.match(/\{[\s\S]*\}/);
-      result = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-    } catch (e) {
-      console.error("Error parsing JSON de OpenAI:", contentText);
-      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
-    }
-
-    if (!result) {
-      return res.status(500).json({ error: "Respuesta inválida de OpenAI" });
-    }
-
-    res.json(result);
+    res.json({ result: contentText });
 
   } catch (error) {
-    console.error("Error interno del servidor:", error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    console.error(error);
+    res.status(500).json({ error: "Error interno" });
   }
 });
 
