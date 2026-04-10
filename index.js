@@ -12,167 +12,163 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.2,
-        input: [
+        model: "gpt-4o",
+        temperature: 0.1,
+        max_tokens: 1500,
+        messages: [
+          {
+            role: "system",
+            content: `Eres una nail tech certificada con más de 10 años de experiencia en esculpido de uñas en acrílico y gel. 
+Tu función es realizar análisis técnicos exhaustivos y profesionales de uñas esculpidas.
+
+REGLAS ABSOLUTAS:
+1. Analiza SOLO elementos técnicos de la uña: estructura, forma, curvatura, ápex, laterales, longitud, línea de sonrisa si aplica, y errores técnicos.
+2. JAMÁS menciones el entorno, el fondo, objetos ajenos a la uña, la piel en general, ni el contexto de la imagen.
+3. JAMÁS menciones si hay polvo, suciedad, crema, o condición de la piel — eso no es análisis de uñas.
+4. Si un elemento técnico NO es visible por el ángulo o la luz, escribe exactamente: "No analizable — [motivo]". Nunca inventes.
+5. El análisis debe ser el que daría una profesional en un curso avanzado de uñas, no una descripción casual.
+6. Usa terminología técnica del sector: C-curve, ápex, laterales, free edge, zona de estrés, tabla, placa ungueal, etc.`
+          },
           {
             role: "user",
             content: [
               {
-                type: "input_text",
-                text: `
-Eres un ANALIZADOR TÉCNICO PROFESIONAL de uñas esculpidas y extensiones.
-
-REGLA FUNDAMENTAL — LEE ESTO ANTES DE ANALIZAR:
-Analiza ÚNICAMENTE lo que puedes ver de forma clara y directa en la imagen.
-Si un elemento NO ES VISIBLE por la perspectiva, la luz, sombra, resolución o ángulo de la foto,
-debes escribir exactamente: "No analizable — [razón breve]"
-NUNCA inventes datos. NUNCA hagas suposiciones sin base visual real.
-Si algo es parcialmente visible, da una estimación con nivel de confianza BAJA y explica por qué.
-
-PASO 0 — PERSPECTIVA DE LA IMAGEN (analiza esto primero):
-Identifica el tipo de vista antes de analizar cada elemento:
-- Vista DORSAL/FRONTAL: se ve el dorso de la mano, útil para laterales y línea de sonrisa
-- Vista LATERAL del dedo: útil para C-curve y ápex, no para laterales
-- Vista BORDE LIBRE (de frente a la punta): ideal para C-curve
-- Vista MIXTA o poco clara: indícalo
-
-Esto determina qué puedes y no puedes analizar. Sé honesto con la perspectiva.
+                type: "text",
+                text: `Analiza esta imagen de uñas con el siguiente formato técnico estricto. 
+Antes de empezar, identifica la perspectiva de la imagen (lateral, dorsal, borde libre, mixta) 
+porque eso determina qué elementos son analizables.
 
 ---
 
-ANÁLISIS TÉCNICO — usa este formato exacto:
-
-ESTRUCTURA GENERAL:
-- Número de uñas visibles y analizables
-- Forma de la uña (square, oval, almendra, coffin, stiletto, squoval...)
-- Tipo: ¿extensión/tip, acrílico esculpido, gel, uña natural?
-- Longitud aproximada (corta, media, larga, extra larga)
-- Observaciones generales visibles
-
-CURVATURA (C-CURVE):
-- ¿Es visible desde esta perspectiva? Si la vista es dorsal/frontal: escribe "No analizable — vista frontal no permite ver el C-curve"
-- Si es visible: estima el porcentaje aproximado (30% = suave, 40% = moderada, 50% = pronunciada)
-- ¿Es uniforme entre todas las uñas visibles?
-- Confianza: ALTA / MEDIA / BAJA
-- Si es BAJA o no visible: explica por qué
-
-LATERALES:
-- ¿Son visibles desde esta perspectiva? Si la vista es lateral del dedo: "No analizable — se necesita vista frontal/dorsal"
-- Si son visibles: ¿son rectos y paralelos al eje del dedo?
-- ¿Tienden hacia arriba (flaring/abanico), hacia abajo, o están rectos?
-- ¿Son simétricos entre ambos lados?
-- Confianza: ALTA / MEDIA / BAJA
-
-LÍNEA DE SONRISA (SMILE LINE):
-- ¿Hay francesa? Si no hay: "No aplica — no es francesa"
-- Si hay francesa: ¿es visible claramente?
-- ¿Está bien definida o difuminada/borrosa?
-- ¿La forma es simétrica (ambos lados iguales)?
-- Si hay varias uñas: ¿coincide la forma y altura entre todas ellas?
-- Confianza: ALTA / MEDIA / BAJA
-
-ÁPEX:
-- ¿Es visible desde esta perspectiva?
-- Posición en la uña: zona anterior (cerca punta), central, posterior (cerca cutícula)
-- ¿Está bien marcado, es suave o apenas perceptible?
-- Si hay varias uñas: ¿es uniforme la posición del ápex en todas?
-- Confianza: ALTA / MEDIA / BAJA
-- Si no es visible: "No analizable — [perspectiva / luz / sombra]"
-
-ERRORES TÉCNICOS DETECTADOS:
-- Lista SOLO errores que sean CLARAMENTE visibles en la imagen
-- Si no hay errores visibles: escribe "No se detectan errores visibles"
-- No inventes errores por suposición
-
-LIMITACIONES DEL ANÁLISIS:
-- Indica qué zonas o elementos no se pudieron analizar y por qué (ángulo, luz, resolución, sombra, etc.)
-- Esta sección es obligatoria aunque sea breve
+### PERSPECTIVA DE LA IMAGEN
+- Tipo de vista detectada:
+- Elementos analizables desde esta perspectiva:
+- Elementos NO analizables desde esta perspectiva:
 
 ---
-RECUERDA: Es preferible decir "No analizable" que inventar un análisis incorrecto.
-`
+
+### ANÁLISIS TÉCNICO
+
+**ESTRUCTURA GENERAL:**
+- Número de uñas visibles y analizables:
+- Forma de la uña (square, oval, almendra, coffin, stiletto, squoval, ballerina...):
+- Tipo de producto: (acrílico esculpido / gel / tip con overlay / uña natural / otro)
+- Longitud aproximada (corta / media / larga / extra larga):
+- Observaciones técnicas generales:
+
+**CURVATURA — C-CURVE:**
+- Visibilidad desde esta perspectiva:
+- Porcentaje estimado: (30% suave / 40% moderada / 50% pronunciada / otro)
+- Uniformidad entre uñas visibles:
+- Confianza: ALTA / MEDIA / BAJA
+- Justificación si confianza baja:
+
+**LATERALES (SIDEWALLS):**
+- Visibilidad desde esta perspectiva:
+- Dirección: (rectos y paralelos / flaring hacia afuera / pinching hacia adentro)
+- Simetría entre ambos lados:
+- Confianza: ALTA / MEDIA / BAJA
+
+**ÁPEX:**
+- Visibilidad desde esta perspectiva:
+- Posición: (anterior — cerca de la punta / central / posterior — cerca cutícula)
+- Definición: (marcado y bien construido / suave / apenas perceptible / plano)
+- Uniformidad entre uñas:
+- Confianza: ALTA / MEDIA / BAJA
+
+**LÍNEA DE SONRISA (SMILE LINE):**
+- ¿Hay francesa? (Sí / No — si No: escribe "No aplica")
+- Si aplica: visibilidad, definición, simetría, uniformidad entre uñas
+- Confianza: ALTA / MEDIA / BAJA
+
+**ZONA DE ESTRÉS:**
+- Visibilidad:
+- Grosor aparente en la zona de estrés:
+- ¿Parece reforzada correctamente o hay riesgo de rotura?
+- Confianza: ALTA / MEDIA / BAJA
+
+**ERRORES TÉCNICOS DETECTADOS:**
+- Lista SOLO errores claramente visibles. Si no los hay: "No se detectan errores visibles con la perspectiva actual."
+- Posibles errores a evaluar: ápex mal posicionado, laterales con flaring, C-curve inexistente o excesiva, longitud desigual entre uñas, zona de estrés débil, forma asimétrica, free edge desnivelado, tabla incorrecta.
+
+**CONCLUSIÓN TÉCNICA:**
+- Valoración global de la calidad técnica: (Excelente / Buena / Mejorable / Deficiente)
+- Puntos fuertes:
+- Puntos a corregir:
+
+---
+
+**LIMITACIONES DEL ANÁLISIS:**
+- Indica qué no se pudo analizar y por qué (ángulo, iluminación, resolución). Esta sección es obligatoria.`
               },
               {
-                type: "input_image",
-                image_url: image_url
+                type: "image_url",
+                image_url: {
+                  url: image_url,
+                  detail: "high"
+                }
               }
             ]
           }
-        ],
-        max_output_tokens: 1000
+        ]
       })
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
+      console.error("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({ error: "Error OpenAI", details: data });
     }
 
-    let result =
-      data.output_text ||
-      data.output?.flatMap(o =>
-        o.content?.map(c => c.text || "")
-      ).join("") ||
-      "";
-
-    result = result.trim();
+    const result = data.choices?.[0]?.message?.content?.trim();
 
     if (!result) {
-      console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
-      return res.status(500).json({ error: "Respuesta vacía" });
+      console.error("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
+      return res.status(500).json({ error: "Respuesta vacía de OpenAI" });
     }
 
-    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        size: "1024x1024",
-        prompt: `
-You are a nail technician assistant.
-Base image:
-${image_url}
-Analysis:
-${result}
-Draw red professional annotations ONLY based on the analysis:
-- apex
-- sidewalls
-- smile line
-- curvature
-Do not invent anything.
-`
-      })
-    });
+    // Segunda llamada: imagen anotada con DALL-E
+    let annotatedImage = null;
+    try {
+      const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-image-1",
+          size: "1024x1024",
+          quality: "medium",
+          prompt: `Professional nail technician diagram. Nail close-up image with clean red annotation arrows and labels pointing to: apex position, sidewalls, C-curve, stress zone. White label boxes with black text. Clinical and professional style. No background, no hands, no skin — only the nail structure diagram with technical annotations in English. Based on this analysis: ${result.substring(0, 500)}`
+        })
+      });
 
-    const imageData = await imageResponse.json();
-    const image =
-      imageData.data?.[0]?.url ||
-      imageData.data?.[0]?.b64_json ||
-      null;
+      const imageData = await imageResponse.json();
+      const rawImage = imageData.data?.[0]?.b64_json || imageData.data?.[0]?.url || null;
+      annotatedImage = rawImage
+        ? (rawImage.startsWith("data:") ? rawImage : rawImage.startsWith("http") ? rawImage : `data:image/png;base64,${rawImage}`)
+        : null;
+    } catch (imgErr) {
+      console.warn("Advertencia: no se pudo generar imagen anotada:", imgErr.message);
+    }
 
     res.json({
       result,
-      image: image?.startsWith("data:")
-        ? image
-        : imageData.data?.[0]?.url || null
+      image: annotatedImage
     });
 
   } catch (error) {
     console.error("FATAL:", error);
-    res.status(500).json({ error: "Error interno" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
 
