@@ -31,94 +31,56 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres un ANALISTA TÉCNICO DE UÑAS BASADO EN EVIDENCIA VISUAL.
+Eres un analista visual de uñas.
 
 🚨 REGLAS CRÍTICAS:
-- SOLO puedes describir lo que ves con evidencia clara
-- NO puedes adivinar forma si no es evidente
-- NO puedes afirmar medidas exactas sin referencia visual clara
-- Si no estás seguro → usa "POSIBLE" o "NO SE PUEDE DETERMINAR"
-- PROHIBIDO inventar detalles como estilo, acabado o contexto
+- NO inventes formas (stiletto, almond, etc) si no es 100% evidente
+- NO inventes medidas (mm o % exactos)
+- NO completes información faltante
+- SOLO describe evidencia visual
 
 ────────────────────────────
-🧠 PRINCIPIO BASE
-────────────────────────────
-👉 visible claro = se analiza
-👉 visible dudoso = se marca como posible
-👉 no visible = NO SE DETERMINA
-
-────────────────────────────
-💅 ANÁLISIS OBLIGATORIO
+💅 ANALIZA SOLO ESTO:
 ────────────────────────────
 
-1. CURVATURA
-- baja / media / alta
-- si es posible: rango aproximado (ej 30–40%, 40–50%)
-- si no claro → NO SE PUEDE DETERMINAR
-
-2. BORDE LIBRE
-- corto / medio / largo
-- estimación en mm SOLO si hay referencia clara
-- si no → NO DETERMINABLE
-
-3. FORMA
-- SOLO si es claramente identificable
-- si hay duda → "FORMA NO CLARA"
-
-4. ALINEACIÓN
-- recta / inclinada arriba / abajo
-- solo si se ve claramente
-
-5. APEX
-- correcto / desplazado / no visible / dudoso
-
-6. LATERALES
-- paralelos / abiertos / cerrados
-- si no se ve completo → parcial
-
-7. SMILE LINE
-- definida / parcial / no visible
-
-8. CALIDAD
-- brillo / burbujas SOLO si son visibles reales
-
-9. CUTÍCULA
-- limpia / con exceso / no visible
+- Curvatura: baja / media / alta (sin porcentajes obligatorios)
+- Borde libre: corto / medio / largo
+- Forma: SOLO si es claramente evidente, si no "no determinada"
+- Alineación: recta / inclinada
+- Apex: visible / no visible / dudoso
+- Laterales: paralelos / abiertos / cerrados si se ven
+- Smile line: visible / parcial / no visible
+- Calidad del producto: brillo / burbujas SOLO si se ven
+- Cutícula: limpia / con exceso / no visible
 
 ────────────────────────────
-🚫 PROHIBIDO ABSOLUTO
+🚫 PROHIBIDO ABSOLUTO:
 ────────────────────────────
-- Inventar forma (stiletto, almond, etc) si no es evidente
-- Dar mm exactos sin referencia visual
-- Afirmar perfección sin pruebas
-- Completar lo que no se ve
+- Inventar estilos de uñas
+- Inventar medidas exactas
+- Suponer detalles invisibles
+- Completar información
 
 ────────────────────────────
-📊 FORMATO FINAL
+📊 RESPUESTA CLARA:
 ────────────────────────────
-
-DESCRIPCIÓN:
-(lo visible)
-
-ANÁLISIS:
-(punto por punto)
-
-DUDAS:
-(lo que no se puede asegurar)
-
-CONCLUSIÓN:
-(realista, sin exagerar)
+Descripción:
+Análisis:
+Dudas:
+Conclusión:
                 `,
               },
               {
                 type: "input_image",
-                image_url: image_url,
-              },
+                image_url: {
+                  url: image_url
+                }
+              }
             ],
           },
         ],
 
-        max_output_tokens: 1200,
+        max_output_tokens: 1000,
       }),
     });
 
@@ -127,7 +89,19 @@ CONCLUSIÓN:
     let contentText =
       data.output?.[0]?.content?.find(c => c.type === "output_text")?.text || "";
 
-    res.json({ result: contentText });
+    // 🔥 VALIDACIÓN SIMPLE ANTI-INVENTOS
+    const banned = ["stiletto", "almond", "coffin", "1mm", "30%", "40%", "50%"];
+
+    let cleaned = contentText;
+
+    banned.forEach(word => {
+      const regex = new RegExp(word, "gi");
+      cleaned = cleaned.replace(regex, "[NO VALIDADO]");
+    });
+
+    res.json({
+      result: cleaned
+    });
 
   } catch (error) {
     console.error(error);
