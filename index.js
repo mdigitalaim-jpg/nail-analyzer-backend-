@@ -14,96 +14,142 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    // 🔹 PROMPT DE ANÁLISIS
+    const analysisPrompt = `
+Eres un ANALISTA TÉCNICO PROFESIONAL en uñas esculpidas.
+
+REGLAS:
+- Analiza SOLO lo visible en la imagen
+- PROHIBIDO inventar
+- Si algo no se ve claramente → indícalo como limitación
+- Sé técnico, directo y preciso
+
+ANÁLISIS:
+
+CURVATURA (C-CURVE):
+- Estima porcentaje aproximado entre 0% y 50%
+- Justifica según lo visible
+
+LATERALES:
+- Rectos y paralelos
+- Inclinados hacia dentro
+- Abiertos hacia fuera
+
+APEX:
+- Alto / bajo / inexistente
+- Posición (centrado, adelantado, retrasado)
+
+SMILE LINE:
+- Profunda / media / plana
+- Simetría si es visible
+
+LIMITACIONES:
+- Qué no se puede evaluar y por qué
+
+FORMATO EXACTO:
+
+CURVATURA:
+...
+
+LATERALES:
+...
+
+APEX:
+...
+
+SMILE LINE:
+...
+
+LIMITACIONES:
+...
+`;
+
+    // 🔹 1. ANÁLISIS
+    const analysisResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1",
         temperature: 0.2,
         input: [
           {
             role: "user",
             content: [
-              {
-                type: "input_text",
-                text: `
-Analiza la imagen de uñas SOLO con base en lo visible.
-
-REGLAS:
-- No inventes información
-- No uses conocimientos externos
-- No añadas formas si no son claras
-- No des porcentajes ni mm exactos si no se pueden ver
-- Si algo no se ve: "no visible"
-
-ANÁLISIS:
-
-- Curvatura: baja / media / alta / no visible
-- Borde libre: corto / medio / largo / no visible
-- Forma: solo si es claramente evidente, si no "no determinada"
-- Alineación: recta / inclinada
-- Apex: visible / dudoso / no visible
-- Laterales: paralelos / abiertos / cerrados (si se ven)
-- Smile line: definida / parcial / no visible
-- Calidad del producto: brillo, burbujas si se ven
-- Cutícula: limpia / con exceso / no visible
-
-FORMATO DE RESPUESTA:
-Descripción:
-Análisis:
-Observaciones:
-Conclusión:
-                `,
-              },
-              {
-                type: "input_image",
-                image_url: {
-                  url: image_url
-                }
-              }
+              { type: "input_text", text: analysisPrompt },
+              { type: "input_image", image_url: image_url }
             ]
           }
         ],
-        max_output_tokens: 1000
-      }),
+        max_output_tokens: 800
+      })
     });
 
-    const data = await response.json();
+    const analysisData = await analysisResponse.json();
 
-    let result = "";
-
-    if (data.output && Array.isArray(data.output)) {
-      for (const item of data.output) {
-        if (item.content && Array.isArray(item.content)) {
-          for (const c of item.content) {
-            if (c.text) {
-              result += c.text;
-            }
-          }
+    let analysisText = "";
+    if (analysisData.output?.[0]?.content) {
+      for (const c of analysisData.output[0].content) {
+        if (c.type === "output_text") {
+          analysisText += c.text;
         }
       }
     }
 
-    if (!result) {
-      return res.status(500).json({
-        error: "No se recibió respuesta de OpenAI",
-        raw: data
-      });
-    }
+    // 🔹 2. IMAGEN CON MARCAS ADAPTADAS AL ANÁLISIS
+    const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        size: "1024x1024",
+        prompt: `
+You are editing a nail image.
 
-    res.json({ result });
+This is the analysis of the nail:
+${analysisText}
+
+Now recreate the SAME nail image and draw red technical annotations based ONLY on that analysis.
+
+Instructions:
+- Mark the apex where the analysis indicates
+- Draw sidewalls according to their real direction (parallel, inward, outward)
+- Draw the smile line shape as observed
+- Represent curvature visually based on the percentage (do NOT use fixed values)
+- Adapt everything to THIS specific nail
+
+Rules:
+- Do NOT invent anything not in the analysis
+- Do NOT use generic placements
+- Do NOT distort the finger or nail
+- Keep annotations clean, precise, professional
+- Use red lines, arrows, and labels
+
+Base image: ${image_url}
+`
+      })
+    });
+
+    const imageData = await imageResponse.json();
+
+    res.json({
+      analysis: analysisText,
+      image: imageData.data?.[0]?.url || null
+    });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Error interno del servidor" });
+    res.status(500).json({ error: "Error interno" });
   }
 });
 
 app.get("/", (req, res) => {
-  res.send("Servidor funcionando correctamente");
+  res.send("Servidor funcionando");
 });
 
 const PORT = process.env.PORT || 3000;
