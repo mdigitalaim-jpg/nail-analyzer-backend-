@@ -14,7 +14,6 @@ app.post("/analyze", async (req, res) => {
   }
 
   try {
-    // 1. UN SOLO MODELO (visión + razonamiento)
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -33,22 +32,41 @@ app.post("/analyze", async (req, res) => {
                 text: `
 Analiza esta uña como inspector técnico profesional.
 
-1. Detecta:
-- curvatura
-- apex
-- laterales
-- smile line
+DEVUELVE SOLO JSON.
 
-2. Luego devuelve instrucciones EXACTAS de dibujo sobre la imagen:
-- dónde poner líneas rojas
-- dónde marcar errores
-- qué zonas resaltar
+Detecta y marca en coordenadas relativas (0 a 1):
 
-IMPORTANTE:
-- No inventes
-- Si no se ve algo, no lo marques
+{
+  "curvature": {
+    "value": "",
+    "confidence": "",
+    "area": "polygon or line points"
+  },
+  "apex": {
+    "point": { "x": 0.5, "y": 0.3 },
+    "confidence": ""
+  },
+  "sidewalls": {
+    "left": [{"x":0,"y":0},{"x":0,"y":0}],
+    "right": [{"x":0,"y":0},{"x":0,"y":0}]
+  },
+  "smileLine": {
+    "curve": [{"x":0,"y":0}]
+  },
+  "errors": [
+    {
+      "type": "",
+      "location": {"x":0,"y":0},
+      "severity": ""
+    }
+  ]
+}
 
-RESPONDE EN FORMATO CLARO.
+REGLAS:
+- SOLO usa lo visible
+- Si no se ve algo, no lo incluyas
+- Coordenadas normalizadas (0 a 1)
+- Precisión máxima
 `
               },
               {
@@ -65,61 +83,36 @@ RESPONDE EN FORMATO CLARO.
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(500).json({ error: data });
+      return res.status(500).json({
+        error: "OpenAI error",
+        details: data
+      });
     }
 
-    const analysis =
+    const text =
       data.output_text ||
       data.output?.flatMap(o =>
         o.content?.map(c => c.text || "")
       ).join("") ||
       "";
 
-    // 2. GENERACIÓN DIRECTA DE IMAGEN ANOTADA
-    const image = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        size: "1024x1024",
-        prompt: `
-Edit this nail image.
-
-BASE IMAGE:
-${image_url}
-
-TECHNICAL ANALYSIS:
-${analysis}
-
-Draw professional red annotations directly on the nail:
-- apex point
-- sidewall lines
-- smile line curve
-- curvature guide
-
-Keep it precise and realistic.
-Do NOT invent structures not visible.
-`
-      })
-    });
-
-    const imgData = await image.json();
-
-    const finalImage =
-      imgData.data?.[0]?.url ||
-      imgData.data?.[0]?.b64_json ||
-      null;
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      return res.status(500).json({
+        error: "Respuesta no es JSON válido",
+        raw: text
+      });
+    }
 
     res.json({
-      analysis,
-      image: finalImage
+      image_url,
+      overlay: json
     });
 
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Error interno" });
   }
 });
