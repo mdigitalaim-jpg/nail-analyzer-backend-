@@ -49,12 +49,24 @@ Esto determina qué puedes y no puedes analizar. Sé honesta con la perspectiva.
 
 ---
 
+IDENTIFICACIÓN DE FORMA — MUY IMPORTANTE:
+Para determinar la forma de la uña observa el free edge (borde libre) con atención:
+- Square: borde libre completamente recto y esquinas a 90 grados
+- Squoval: borde libre recto pero esquinas ligeramente redondeadas
+- Oval: borde libre redondeado en forma de óvalo, más estrecho que la base
+- Almendra: laterales que se estrechan hacia una punta redondeada
+- Coffin/Ballerina: laterales que se estrechan pero con borde libre plano y recto
+- Stiletto: laterales que terminan en punta afilada
+Si no puedes determinar la forma con certeza por el ángulo: escribe "No analizable — ángulo no permite determinar forma"
+NUNCA confundas square con coffin: el coffin tiene laterales que se estrechan, el square no.
+
+---
+
 ANÁLISIS TÉCNICO — usa este formato exacto:
 
 ESTRUCTURA GENERAL:
 - Número de uñas visibles y analizables
 - Forma de la uña (square, oval, almendra, coffin, stiletto, squoval, ballerina...)
-- Tipo: ¿acrílico esculpido, gel, tip con overlay, uña natural?
 - Longitud aproximada (corta, media, larga, extra larga)
 - Observaciones técnicas generales (solo sobre la estructura de la uña)
 
@@ -63,7 +75,6 @@ CURVATURA (C-CURVE):
 - Si es visible: porcentaje aproximado (30% = suave, 40% = moderada, 50% = pronunciada)
 - ¿Es uniforme entre todas las uñas visibles?
 - Confianza: ALTA / MEDIA / BAJA
-- Si BAJA o no visible: explica por qué
 
 LATERALES (SIDEWALLS):
 - ¿Son visibles desde esta perspectiva?
@@ -110,8 +121,8 @@ RECUERDA: Es preferible decir "No analizable" que inventar un análisis incorrec
 ---
 FORMATO DE RESPUESTA — MUY IMPORTANTE:
 Devuelve el análisis en texto plano, sin markdown, sin HTML, sin asteriscos, sin ###, sin etiquetas.
-Cada sección debe estar separada por una línea en blanco.
-Cada punto dentro de cada sección debe estar en su propia línea.
+Cada sección separada por una línea en blanco.
+Cada punto en su propia línea.
 Usa exactamente este formato con emojis:
 
 💅 ANÁLISIS TÉCNICO
@@ -182,7 +193,11 @@ Usa exactamente este formato con emojis:
       ).join("") ||
       "";
 
-    result = result.trim();
+    // Asegurar saltos de línea correctos entre secciones y puntos
+    result = result
+      .replace(/• /g, "\n• ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
     if (!result) {
       console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
