@@ -110,7 +110,9 @@ RECUERDA: Es preferible decir "No analizable" que inventar un análisis incorrec
 ---
 FORMATO DE RESPUESTA — MUY IMPORTANTE:
 Devuelve el análisis en texto plano, sin markdown, sin HTML, sin asteriscos, sin ###, sin etiquetas.
-Usa emojis para separar visualmente cada sección, así:
+Cada sección debe estar separada por una línea en blanco.
+Cada punto dentro de cada sección debe estar en su propia línea.
+Usa exactamente este formato con emojis:
 
 💅 ANÁLISIS TÉCNICO
 
