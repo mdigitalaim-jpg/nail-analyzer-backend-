@@ -106,6 +106,22 @@ LIMITACIONES DEL ANÁLISIS:
 
 ---
 RECUERDA: Es preferible decir "No analizable" que inventar un análisis incorrecto.
+
+---
+FORMATO DE RESPUESTA — MUY IMPORTANTE:
+Devuelve el análisis completo en formato HTML limpio, sin markdown, sin asteriscos, sin ###.
+Usa estas etiquetas:
+- <h2> para el título principal "ANÁLISIS TÉCNICO"
+- <h3> para cada sección (PERSPECTIVA, ESTRUCTURA GENERAL, CURVATURA, etc.)
+- <ul><li> para cada punto dentro de cada sección
+- <span class="confianza-alta"> para confianza ALTA (texto verde)
+- <span class="confianza-media"> para confianza MEDIA (texto naranja)
+- <span class="confianza-baja"> para confianza BAJA (texto rojo)
+- <span class="no-analizable"> para elementos no analizables (texto gris cursiva)
+- <div class="conclusion"> para la sección de conclusión técnica
+- <div class="errores"> para errores detectados
+- <div class="limitaciones"> para limitaciones
+No incluyas <html>, <head>, <body> ni estilos CSS. Solo el contenido HTML.
 `
               },
               {
