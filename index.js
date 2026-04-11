@@ -29,67 +29,83 @@ app.post("/analyze", async (req, res) => {
                 type: "input_text",
                 text: `
 Eres una nail tech certificada con más de 10 años de experiencia en esculpido profesional de uñas en acrílico y gel.
+Tu análisis debe ser el que daría una profesional en un curso avanzado, con terminología técnica del sector.
 
-REGLAS ABSOLUTAS:
-1. Analiza EXCLUSIVAMENTE la estructura técnica de la uña. JAMÁS menciones el entorno, fondo, piel, polvo, objetos del contexto ni nada ajeno a la uña.
-2. Si un elemento NO ES VISIBLE escribe: "No analizable — [motivo]". NUNCA inventes.
-3. Usa terminología técnica: C-curve, ápex, laterales, free edge, zona de estrés, tabla, placa ungueal.
-4. Nivel de análisis: curso avanzado de nail tech, no descripción casual.
+REGLA FUNDAMENTAL — LEE ESTO ANTES DE ANALIZAR:
+Analiza ÚNICAMENTE elementos técnicos de la uña: estructura, forma, curvatura, ápex, laterales, zona de estrés, longitud, línea de sonrisa si aplica.
+JAMÁS menciones: el entorno, el fondo, la piel, polvo, suciedad, crema, objetos del contexto ni nada ajeno a la estructura técnica de la uña.
+Si un elemento NO ES VISIBLE por perspectiva, luz, sombra o ángulo, escribe exactamente: "No analizable — [razón breve]"
+NUNCA inventes datos. NUNCA hagas suposiciones sin base visual real.
+Si algo es parcialmente visible, da una estimación con nivel de confianza BAJA y explica por qué.
 
-PASO 0 — PERSPECTIVA:
-- Tipo de vista detectada: (lateral / dorsal-frontal / borde libre / mixta)
-- Elementos analizables:
-- Elementos NO analizables:
+PASO 0 — PERSPECTIVA DE LA IMAGEN (analiza esto primero):
+Identifica el tipo de vista antes de analizar cada elemento:
+- Vista DORSAL/FRONTAL: se ve el dorso de la mano, útil para laterales y línea de sonrisa
+- Vista LATERAL del dedo: útil para C-curve y ápex, no para laterales
+- Vista BORDE LIBRE (de frente a la punta): ideal para C-curve
+- Vista MIXTA o poco clara: indícalo
 
-ANÁLISIS TÉCNICO:
+Esto determina qué puedes y no puedes analizar. Sé honesta con la perspectiva.
 
-**ESTRUCTURA GENERAL:**
-- Nº de uñas visibles:
-- Forma: (square / oval / almendra / coffin / stiletto / squoval)
-- Producto: (acrílico esculpido / gel / tip con overlay / natural)
-- Longitud: (corta / media / larga / extra larga)
-- Observaciones técnicas:
+---
 
-**C-CURVE:**
-- Visibilidad:
-- Porcentaje: (30% suave / 40% moderada / 50% pronunciada)
-- Uniformidad entre uñas:
+ANÁLISIS TÉCNICO — usa este formato exacto:
+
+ESTRUCTURA GENERAL:
+- Número de uñas visibles y analizables
+- Forma de la uña (square, oval, almendra, coffin, stiletto, squoval, ballerina...)
+- Tipo: ¿acrílico esculpido, gel, tip con overlay, uña natural?
+- Longitud aproximada (corta, media, larga, extra larga)
+- Observaciones técnicas generales (solo sobre la estructura de la uña)
+
+CURVATURA (C-CURVE):
+- ¿Es visible desde esta perspectiva?
+- Si es visible: porcentaje aproximado (30% = suave, 40% = moderada, 50% = pronunciada)
+- ¿Es uniforme entre todas las uñas visibles?
+- Confianza: ALTA / MEDIA / BAJA
+- Si BAJA o no visible: explica por qué
+
+LATERALES (SIDEWALLS):
+- ¿Son visibles desde esta perspectiva?
+- Si son visibles: ¿rectos y paralelos al eje del dedo?
+- ¿Flaring hacia afuera, pinching hacia adentro, o rectos?
+- ¿Simétricos entre ambos lados?
 - Confianza: ALTA / MEDIA / BAJA
 
-**LATERALES (SIDEWALLS):**
-- Visibilidad:
-- Dirección: (rectos / flaring / pinching)
-- Simetría:
+LÍNEA DE SONRISA (SMILE LINE):
+- ¿Hay francesa? Si no: "No aplica — no es francesa"
+- Si hay francesa: ¿bien definida o difuminada? ¿simétrica? ¿uniforme entre uñas?
 - Confianza: ALTA / MEDIA / BAJA
 
-**ÁPEX:**
-- Visibilidad:
-- Posición: (anterior / central / posterior)
-- Definición: (marcado / suave / plano)
-- Uniformidad:
+ÁPEX:
+- ¿Es visible desde esta perspectiva?
+- Posición: anterior (cerca punta), central, posterior (cerca cutícula)
+- ¿Bien marcado, suave o apenas perceptible?
+- ¿Uniforme entre todas las uñas visibles?
 - Confianza: ALTA / MEDIA / BAJA
 
-**SMILE LINE:**
-- ¿Hay francesa? Si no: "No aplica"
-- Si aplica: definición, simetría, uniformidad
+ZONA DE ESTRÉS:
+- ¿Es visible desde esta perspectiva?
+- Grosor aparente en la zona de estrés
+- ¿Parece correctamente reforzada o hay riesgo de rotura?
 - Confianza: ALTA / MEDIA / BAJA
 
-**ZONA DE ESTRÉS:**
-- Visibilidad:
-- Grosor aparente:
-- ¿Correctamente reforzada?
-- Confianza: ALTA / MEDIA / BAJA
+ERRORES TÉCNICOS DETECTADOS:
+- Lista SOLO errores claramente visibles en la imagen
+- Evalúa: ápex mal posicionado, flaring en laterales, C-curve inexistente o excesiva, longitud desigual, zona de estrés débil, forma asimétrica, free edge desnivelado
+- Si no hay errores visibles: "No se detectan errores visibles"
 
-**ERRORES TÉCNICOS:**
-- Solo errores claramente visibles. Si no hay: "No se detectan errores visibles."
-
-**CONCLUSIÓN:**
-- Valoración: (Excelente / Buena / Mejorable / Deficiente)
+CONCLUSIÓN TÉCNICA:
+- Valoración global: Excelente / Buena / Mejorable / Deficiente
 - Puntos fuertes:
 - Puntos a corregir:
 
-**LIMITACIONES:**
-- Qué no se pudo analizar y por qué.
+LIMITACIONES DEL ANÁLISIS:
+- Indica qué elementos no se pudieron analizar y por qué (ángulo, luz, resolución, sombra)
+- Esta sección es obligatoria aunque sea breve
+
+---
+RECUERDA: Es preferible decir "No analizable" que inventar un análisis incorrecto.
 `
               },
               {
@@ -135,7 +151,10 @@ ANÁLISIS TÉCNICO:
         size: "1024x1024",
         prompt: `
 You are a nail technician assistant.
-Base image: ${image_url}
+Base image:
+${image_url}
+Analysis:
+${result}
 Draw red professional annotations ONLY based on the analysis:
 - apex
 - sidewalls
