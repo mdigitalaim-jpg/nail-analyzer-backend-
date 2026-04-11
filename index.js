@@ -174,7 +174,10 @@ Usa este formato exacto:
       "";
 
     // Forzar salto de línea antes de cada punto y entre secciones
-    result = result.trim();
+    result = result
+  .replace(/• /g, "\n• ")
+  .replace(/\n{3,}/g, "\n\n")
+  .trim();
 
     if (!result) {
       console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
