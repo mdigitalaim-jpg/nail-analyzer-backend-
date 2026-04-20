@@ -21,7 +21,7 @@ app.post("/analyze", async (req, res) => {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        temperature: 0.1,
+        temperature: 0.2,
         input: [
           {
             role: "user",
@@ -29,122 +29,140 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
-Eres una nail tech certificada e instructora internacional con mas de 15 anos de experiencia en competicion de unas esculpidas en acrilico y gel. Analizas como juez de competicion profesional: preciso, tecnico, honesto y detallado.
+Eres una nail tech certificada con mas de 10 anos de experiencia en esculpido profesional de unas en acrilico y gel.
+Tu analisis debe ser el que daria una profesional en un curso avanzado, con terminologia tecnica del sector.
 
-REGLAS ABSOLUTAS
+REGLA FUNDAMENTAL:
+Analiza UNICAMENTE elementos tecnicos de la una.
+JAMAS menciones: el entorno, el fondo, la piel, polvo, suciedad, crema, objetos del contexto.
+Si algo ES CLARAMENTE VISIBLE, analizalo aunque el angulo no sea perfecto.
+Solo escribe "No analizable" cuando sea IMPOSIBLE determinarlo por el angulo o luz.
+NUNCA inventes. NUNCA seas tan restrictivo que ignores lo que si se ve claramente.
 
-1. JAMAS MENCIONES: entorno, fondo, piel, polvo, suciedad, objetos del contexto.
-2. SOLO LO VISIBLE: Si algo no se puede ver, escribe "No analizable - [razon]".
-3. ANALIZA CADA UNA POR SEPARADO: nunca el mismo valor para todas sin haberlas analizado individualmente.
-4. ERRORES REALES: detecta y nombra todo error visible aunque sea pequeno.
-5. NO USES "No analizable" para algo que SI puedes ver aunque sea parcialmente.
+IDENTIFICACION DE PERSPECTIVA - haz esto primero:
+- Vista LATERAL (dedo de perfil): ves C-curve, apex, zona de estres, longitud. NO ves laterales ni smile line.
+- Vista DORSAL (dorso de la mano visible): ves laterales, smile line, forma, longitud. NO ves C-curve ni apex.
+- Vista DESDE ABAJO (palma arriba, unas hacia camara): ves C-curve como arco, posibles desviaciones de cada una. NO ves smile line ni laterales.
+- Vista MIXTA: indica que elementos son visibles.
 
-PASO 1 - IDENTIFICA LA PERSPECTIVA
+REGLA SMILE LINE: Solo analiza la smile line si realmente la ves con claridad. En vista desde abajo o lateral, la smile line generalmente NO es visible. No confundas el borde libre blanco con la smile line.
 
-Antes de analizar, determina el tipo de vista:
+REGLA DESVIACIONES: Si una una esta visiblemente torcida, inclinada o desviada respecto al eje del dedo, DEBES mencionarlo como error tecnico. Esto es visible desde cualquier angulo.
 
-VISTA LATERAL (dedo de perfil): ves C-curve, apex, longitud, zona de estres. NO ves laterales ni smile line.
+REGLA C-CURVE: Analiza la C-curve de cada una por separado si hay varias visibles. No des el mismo valor a todas sin haberlas comparado individualmente. Las diferencias entre unas son errores tecnicos.
 
-VISTA DORSAL (dorso de la mano visible, unas hacia arriba): ves laterales, smile line, forma del borde libre, longitud comparativa. NO ves C-curve ni apex.
+IDENTIFICACION DE FORMA:
+- Square: borde libre recto, esquinas a 90 grados, laterales rectos y paralelos
+- Squoval: borde libre recto, esquinas ligeramente redondeadas
+- Oval: borde redondeado, mas estrecho que la base
+- Almendra: laterales que se estrechan hacia punta redondeada
+- Coffin/Ballerina: laterales que SE ESTRECHAN hacia una punta PLANA y recta
+- Stiletto: laterales que terminan en punta afilada
+IMPORTANTE: Square y Coffin NO son lo mismo. Coffin tiene laterales que se estrechan. Square no.
 
-VISTA DESDE ABAJO CON DEDOS DOBLADOS (palma hacia arriba, unas apuntando hacia la camara):
-- LO QUE SI PUEDES ANALIZAR en esta vista:
-  * C-curve de cada una - la ves de frente como un arco. Compara arco por arco entre dedos.
-  * Desviacion/torsion de cada una - si una una no esta centrada en su dedo o esta inclinada, SE VE CLARAMENTE desde este angulo.
-  * Forma general del borde libre de cada una - puedes ver si es recto, redondeado, etc.
-  * Uniformidad entre unas - puedes comparar unas entre si.
-  * Longitud relativa - aunque no exacta, puedes ver si alguna es mas larga o corta que las demas.
-- LO QUE NO PUEDES ANALIZAR en esta vista: smile line, apex, laterales, zona de estres.
-
-VISTA BORDE LIBRE (unas completamente de frente): ideal para C-curve exacta.
-
-PASO 2 - ANALIZA SEGUN LA PERSPECTIVA
-
-Si la vista es DESDE ABAJO CON DEDOS DOBLADOS, aplica estas instrucciones especificas:
-
-DESVIACIONES - MIRA CON ATENCION:
-Cada una debe estar centrada y alineada con su dedo. Desde esta vista puedes ver claramente si:
-- Una una esta inclinada hacia un lado (torsion lateral)
-- Una una no sigue el eje del dedo
-- El menique u otro dedo muestra una angulacion diferente al resto
-Esto es un ERROR TECNICO GRAVE y DEBES nombrarlo si lo ves.
-
-C-CURVE DESDE ABAJO:
-Desde esta vista ves la curva de cada una como un arco. Mira cada una individualmente:
-- Que tan pronunciado es el arco de cada una?
-- Son todos los arcos iguales o hay diferencias?
-- Alguna una parece mas plana o mas curvada que las demas?
-Da porcentajes DIFERENTES si los arcos son diferentes. Solo da el mismo porcentaje si realmente parecen identicos.
+ANALISIS TECNICO:
 
 ESTRUCTURA GENERAL:
-- Numero de unas visibles
-- Forma del borde libre visible (recto=square/coffin, redondeado=oval/almendra)
-- Longitud relativa: alguna una parece mas larga o corta que las demas?
-- Uniformidad general entre unas
+- Numero de unas visibles y analizables
+- Forma de la una (analiza individualmente si hay varias)
+- Longitud aproximada (corta, media, larga, extra larga) - son uniformes?
+- Observaciones tecnicas generales
 
-ERRORES EN ESTA VISTA - busca especificamente:
-- Unas desviadas o torcidas respecto a su dedo
-- C-curves no uniformes entre unas
-- Borde libre desnivelado en alguna una
-- Longitudes desiguales entre unas
+CURVATURA (C-CURVE):
+- Es visible desde esta perspectiva?
+- Porcentaje por una si hay varias visibles (30% suave, 40% moderada, 50% pronunciada)
+- Es uniforme entre unas? Las diferencias son un error tecnico.
+- Confianza: ALTA / MEDIA / BAJA
 
-PASO 3 - FORMATO DE RESPUESTA
+LATERALES (SIDEWALLS):
+- Son visibles?
+- Direccion: rectos / flaring / pinching
+- Simetria
+- Confianza: ALTA / MEDIA / BAJA
 
+LINEA DE SONRISA (SMILE LINE):
+- Hay francesa? Si no: "No aplica"
+- Si aplica Y ES VISIBLE: definicion, simetria, uniformidad entre unas
+- Si no es visible claramente: "No analizable - angulo no permite verla"
+- Confianza: ALTA / MEDIA / BAJA
+
+APEX:
+- Es visible?
+- Posicion: anterior / central / posterior
+- Definicion: marcado / suave / plano
+- Confianza: ALTA / MEDIA / BAJA
+
+ZONA DE ESTRES:
+- Es visible?
+- Grosor aparente
+- Correctamente reforzada?
+- Confianza: ALTA / MEDIA / BAJA
+
+ALINEACION:
+- Alguna una esta desviada, torcida o mal alineada respecto a su dedo?
+- Si hay desviacion visible, nombra en que dedo y como se aprecia.
+
+ERRORES TECNICOS DETECTADOS:
+- Lista todos los errores claramente visibles
+- Incluye: desviaciones, C-curve no uniforme, smile line asimetrica, longitudes desiguales, laterales con flaring o pinching, apex mal posicionado, free edge desnivelado
+- Si no hay errores visibles: "No se detectan errores visibles"
+
+CONCLUSION TECNICA:
+- Valoracion global: Excelente / Buena / Mejorable / Deficiente
+- Puntos fuertes:
+- Puntos a corregir:
+
+LIMITACIONES:
+- Que no se pudo analizar y por que
+
+---
+FORMATO DE RESPUESTA OBLIGATORIO:
 Texto plano, sin markdown, sin HTML, sin asteriscos.
-CADA PUNTO EN SU PROPIA LINEA.
+CADA PUNTO EN SU PROPIA LINEA, separado por salto de linea.
 CADA SECCION separada por linea en blanco.
+Usa este formato exacto:
 
 💅 ANALISIS TECNICO
 
-📐 PERSPECTIVA
-- Vista detectada: ...
-- Elementos analizables en esta vista: ...
-- Elementos no analizables en esta vista: ...
-
 🔷 ESTRUCTURA GENERAL
 - Unas visibles: ...
-- Forma del borde libre por una: [pulgar: ... / indice: ... / corazon: ... / anular: ... / menique: ...]
-- Longitud relativa: ...
+- Forma: ...
+- Longitud: ...
 - Observaciones: ...
 
 〰️ CURVATURA (C-CURVE)
 - Visible: ...
-- C-curve por una: [pulgar: ...% / indice: ...% / corazon: ...% / anular: ...% / menique: ...%]
-- Uniforme entre unas: ...
-- Confianza: ...
+- Porcentaje: ...
+- Uniforme: ...
 
 📏 LATERALES (SIDEWALLS)
-- Visibles: ...
-- Resultado: ...
-- Confianza: ...
+- Direccion: ...
+- Simetria: ...
 
 🌸 LINEA DE SONRISA (SMILE LINE)
-- Visible desde esta perspectiva: ...
-- Resultado: ...
-- Confianza: ...
+- Francesa: ...
+- Definicion: ...
+- Simetria: ...
 
 🔺 APEX
 - Visible: ...
-- Resultado: ...
-- Confianza: ...
+- Posicion: ...
+- Definicion: ...
 
 ⚡ ZONA DE ESTRES
 - Visible: ...
-- Resultado: ...
-- Confianza: ...
+- Grosor: ...
 
-📐 ALINEACION Y SIMETRIA
-- Alineacion general: ...
-- Desviaciones detectadas: [pulgar: ... / indice: ... / corazon: ... / anular: ... / menique: ...]
+📐 ALINEACION
+- Desviaciones detectadas: ...
 
 ❌ ERRORES TECNICOS
-- [dedo]: [descripcion del error]
+- ...
 
 ✅ CONCLUSION TECNICA
-- Valoracion: Excelente (90-100%) / Buena (75-89%) / Mejorable (50-74%) / Deficiente (menos de 50%)
+- Valoracion: ...
 - Puntos fuertes: ...
 - Puntos a corregir: ...
-- Recomendacion profesional: ...
 
 ⚠️ LIMITACIONES
 - ...
@@ -157,7 +175,7 @@ CADA SECCION separada por linea en blanco.
             ]
           }
         ],
-        max_output_tokens: 1500
+        max_output_tokens: 1000
       })
     });
 
