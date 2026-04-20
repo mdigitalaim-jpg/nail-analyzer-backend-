@@ -47,10 +47,14 @@ PASO 0 — IDENTIFICACIÓN DE PERSPECTIVA
 
 Identifica con precisión:
 - Vista LATERAL del dedo (de perfil): permite ver C-curve, ápex, zona de estrés, longitud. NO permite ver laterales ni smile line.
-- Vista DORSAL/FRONTAL (dorso de la mano): permite ver laterales, smile line, simetría entre uñas. NO permite ver C-curve ni ápex.
-- Vista DESDE ABAJO (palma hacia arriba): permite ver C-curve parcialmente, smile line si la hay. Muy limitada para laterales.
-- Vista BORDE LIBRE (de frente a la punta): ideal para C-curve.
+- Vista DORSAL/FRONTAL (dorso de la mano, uñas apuntando hacia arriba o hacia el observador con el dorso visible): permite ver laterales, smile line, simetría entre uñas. NO permite ver C-curve ni ápex.
+- Vista DESDE ABAJO (palma hacia arriba, dedos doblados, uñas apuntando hacia el observador): permite ver C-curve SI los dedos están extendidos. Si los dedos están doblados y las uñas apuntan directamente hacia la cámara, la C-curve es parcialmente visible pero la smile line NO es visible desde este ángulo — solo se ve el borde libre de la uña, no la zona de transición natural/blanco. En esta vista los laterales y el ápex tampoco son analizables.
+- Vista BORDE LIBRE (de frente a la punta, uñas completamente de frente): ideal para C-curve. NO permite ver smile line, laterales ni ápex.
 - Vista MIXTA: indica exactamente qué elementos son visibles.
+
+REGLA CRÍTICA SOBRE LA SMILE LINE: La smile line (línea de sonrisa de una francesa) SOLO es analizable cuando se ve el dorso de la mano con las uñas hacia arriba o en vista lateral clara. Si los dedos están doblados con la palma hacia arriba y las uñas apuntando hacia la cámara, la smile line NO es visible — escribe "No analizable — ángulo no permite ver la transición natural/blanco". No confundas el borde libre blanco con la smile line.
+
+REGLA CRÍTICA SOBRE DESVIACIONES: Si alguna uña está visiblemente torcida, inclinada o desviada respecto al eje del dedo — aunque sea ligeramente — es un error técnico que DEBES detectar y nombrar. Las desviaciones son uno de los errores más penalizados en competición.
 
 IDENTIFICACIÓN DE FORMA
 
