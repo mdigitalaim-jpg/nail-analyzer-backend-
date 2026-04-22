@@ -235,6 +235,12 @@ Usa este formato exacto:
 // ─────────────────────────────────────────────
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const { createClient } = require('@supabase/supabase-js');
+
+const getSupabase = () => createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // Create checkout session
 app.post("/create-checkout-session", async (req, res) => {
@@ -288,22 +294,22 @@ app.post("/webhook", async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    console.error("WEBHOOK ERROR:", err.message);
+    console.error("WEBHOOK SIGNATURE ERROR:", err.message);
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
+
+  console.log("WEBHOOK EVENT RECEIVED:", event.type);
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const { userId, type } = session.metadata;
 
-    try {
-      const { createClient } = require('@supabase/supabase-js');
-      const supabase = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
+    console.log("PROCESSING PAYMENT:", { userId, type });
 
-      await supabase.from('payments').insert({
+    const supabase = getSupabase();
+
+    try {
+      const { error: insertError } = await supabase.from('payments').insert({
         user_id: userId,
         type,
         amount: 10,
@@ -311,18 +317,34 @@ app.post("/webhook", async (req, res) => {
         status: 'completed'
       });
 
+      if (insertError) {
+        console.error("INSERT ERROR:", insertError);
+      } else {
+        console.log("PAYMENT INSERTED OK");
+      }
+
       if (type === 'recharge') {
-        await supabase.rpc('add_analysis_credits', {
+        const { error: rpcError } = await supabase.rpc('add_analysis_credits', {
           p_user_id: userId,
           p_credits: 100
         });
+        if (rpcError) {
+          console.error("RPC ERROR:", rpcError);
+        } else {
+          console.log("CREDITS ADDED OK");
+        }
       } else if (type === 'renewal') {
         const newExpiry = new Date();
         newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-        await supabase
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({ expires_at: newExpiry.toISOString() })
           .eq('id', userId);
+        if (updateError) {
+          console.error("UPDATE ERROR:", updateError);
+        } else {
+          console.log("RENEWAL UPDATED OK");
+        }
       }
     } catch (dbError) {
       console.error("DB ERROR:", dbError);
