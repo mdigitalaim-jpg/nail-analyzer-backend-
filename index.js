@@ -7,11 +7,10 @@ app.use(cors());
 // Raw body needed for Stripe webhook signature verification
 app.use((req, res, next) => {
   if (req.originalUrl === '/webhook') {
-    let data = '';
-    req.setEncoding('utf8');
-    req.on('data', (chunk) => { data += chunk; });
+    const chunks = [];
+    req.on('data', (chunk) => { chunks.push(chunk); });
     req.on('end', () => {
-      req.rawBody = data;
+      req.rawBody = Buffer.concat(chunks);
       next();
     });
   } else {
