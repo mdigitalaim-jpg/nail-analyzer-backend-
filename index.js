@@ -3,9 +3,26 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+
+// Raw body needed for Stripe webhook signature verification
+app.use((req, res, next) => {
+  if (req.originalUrl === '/webhook') {
+    let data = '';
+    req.setEncoding('utf8');
+    req.on('data', (chunk) => { data += chunk; });
+    req.on('end', () => {
+      req.rawBody = data;
+      next();
+    });
+  } else {
+    express.json({ limit: '10mb' })(req, res, next);
+  }
+});
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// ─────────────────────────────────────────────
+// ANALYZE ENDPOINT — NO TOCAR
+// ─────────────────────────────────────────────
 app.post("/analyze", async (req, res) => {
   const { image_url } = req.body;
   if (!image_url) {
@@ -214,6 +231,109 @@ Usa este formato exacto:
   }
 });
 
+// ─────────────────────────────────────────────
+// STRIPE ENDPOINTS
+// ─────────────────────────────────────────────
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Create checkout session
+app.post("/create-checkout-session", async (req, res) => {
+  const { type, userId, userEmail } = req.body;
+
+  if (!type || !userId) {
+    return res.status(400).json({ error: "type y userId son requeridos" });
+  }
+
+  const isRecharge = type === 'recharge';
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: isRecharge ? 'Recarga 100 analisis' : 'Renovacion 1 ano',
+            description: isRecharge
+              ? '100 analisis de imagenes con IA'
+              : 'Acceso a la app durante 1 ano',
+          },
+          unit_amount: 1000,
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.APP_URL}?payment=success&type=${type}`,
+      cancel_url: `${process.env.APP_URL}?payment=cancel`,
+      customer_email: userEmail,
+      metadata: { userId, type },
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error("STRIPE ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Stripe webhook
+app.post("/webhook", async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
+  } catch (err) {
+    console.error("WEBHOOK ERROR:", err.message);
+    return res.status(400).json({ error: `Webhook error: ${err.message}` });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const { userId, type } = session.metadata;
+
+    try {
+      const { createClient } = require('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+
+      await supabase.from('payments').insert({
+        user_id: userId,
+        type,
+        amount: 10,
+        stripe_session_id: session.id,
+        status: 'completed'
+      });
+
+      if (type === 'recharge') {
+        await supabase.rpc('add_analysis_credits', {
+          p_user_id: userId,
+          p_credits: 100
+        });
+      } else if (type === 'renewal') {
+        const newExpiry = new Date();
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+        await supabase
+          .from('profiles')
+          .update({ expires_at: newExpiry.toISOString() })
+          .eq('id', userId);
+      }
+    } catch (dbError) {
+      console.error("DB ERROR:", dbError);
+    }
+  }
+
+  res.json({ received: true });
+});
+
+// ─────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.send("Servidor funcionando");
 });
