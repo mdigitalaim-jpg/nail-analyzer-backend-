@@ -45,7 +45,13 @@ IDENTIFICACION DE PERSPECTIVA - haz esto primero:
 - Vista DESDE ABAJO (palma arriba, unas hacia camara): ves C-curve como arco, posibles desviaciones de cada una. NO ves smile line ni laterales.
 - Vista MIXTA: indica que elementos son visibles.
 
-REGLA SMILE LINE: Solo analiza la smile line si realmente la ves con claridad. En vista desde abajo o lateral, la smile line generalmente NO es visible. No confundas el borde libre blanco con la smile line.
+REGLA SMILE LINE: La smile line (linea de sonrisa) es la linea de transicion entre la zona natural/rosa de la una y el borde libre. Puede ser visible en CUALQUIER tipo de una que tenga francesa, independientemente del color de la punta. La smile line existe en:
+- Francesa clasica blanca
+- Francesa de color (punta de cualquier color: rojo, negro, nude, decorada, etc.)
+- Stiletto con francesa
+- Coffin con francesa
+- Cualquier forma con linea de transicion visible entre zona natural y borde libre
+Solo escribe "No aplica" si la una NO tiene ninguna transicion visible entre zona natural y borde libre (una de color solido completo). Solo escribe "No analizable" si la perspectiva impide verla. En vista desde abajo o lateral generalmente NO es visible.
 
 REGLA DESVIACIONES: Si una una esta visiblemente torcida, inclinada o desviada respecto al eje del dedo, DEBES mencionarlo como error tecnico. Esto es visible desde cualquier angulo.
 
@@ -81,9 +87,9 @@ LATERALES (SIDEWALLS):
 - Confianza: ALTA / MEDIA / BAJA
 
 LINEA DE SONRISA (SMILE LINE):
-- Hay francesa? Si no: "No aplica"
-- Si aplica Y ES VISIBLE: definicion, simetria, uniformidad entre unas
-- Si no es visible claramente: "No analizable - angulo no permite verla"
+- Hay linea de sonrisa (francesa de cualquier color o tipo)? Si no hay ninguna transicion visible entre zona natural y borde libre: "No aplica"
+- Si es visible: tipo de francesa (clasica blanca, color, decorada...), definicion, simetria, uniformidad entre unas
+- Si no es visible por perspectiva: "No analizable - angulo no permite verla"
 - Confianza: ALTA / MEDIA / BAJA
 
 APEX:
