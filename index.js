@@ -250,7 +250,25 @@ app.post("/create-checkout-session", async (req, res) => {
     return res.status(400).json({ error: "type y userId son requeridos" });
   }
 
-  const isRecharge = type === 'recharge';
+  const prices = {
+    initial: 4800,   // 48€ - acceso inicial
+    recharge: 1000,  // 10€ - recarga 100 analisis
+    renewal: 1000,   // 10€ - renovacion 1 ano
+  };
+
+  const names = {
+    initial: 'Acceso inicial - Nails Training',
+    recharge: 'Recarga 100 analisis',
+    renewal: 'Renovacion 1 ano',
+  };
+
+  const descriptions = {
+    initial: 'Acceso completo a la app durante 1 ano + 100 analisis de imagenes con IA',
+    recharge: '100 analisis de imagenes con IA',
+    renewal: 'Acceso a la app durante 1 ano adicional',
+  };
+
+  const amount = prices[type] || 1000;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -259,12 +277,10 @@ app.post("/create-checkout-session", async (req, res) => {
         price_data: {
           currency: 'eur',
           product_data: {
-            name: isRecharge ? 'Recarga 100 analisis' : 'Renovacion 1 ano',
-            description: isRecharge
-              ? '100 analisis de imagenes con IA'
-              : 'Acceso a la app durante 1 ano',
+            name: names[type] || type,
+            description: descriptions[type] || '',
           },
-          unit_amount: 1000,
+          unit_amount: amount,
         },
         quantity: 1,
       }],
@@ -309,10 +325,11 @@ app.post("/webhook", async (req, res) => {
     const supabase = getSupabase();
 
     try {
+      // Guardar pago en tabla payments
       const { error: insertError } = await supabase.from('payments').insert({
         user_id: userId,
         type,
-        amount: 10,
+        amount: session.amount_total / 100,
         stripe_session_id: session.id,
         status: 'completed'
       });
@@ -323,7 +340,28 @@ app.post("/webhook", async (req, res) => {
         console.log("PAYMENT INSERTED OK");
       }
 
-      if (type === 'recharge') {
+      if (type === 'initial') {
+        // Pago inicial: aprobar usuario + asignar 100 creditos + 1 año de acceso
+        const newExpiry = new Date();
+        newExpiry.setFullYear(newExpiry.getFullYear() + 1);
+
+        const { error: approveError } = await supabase
+          .from('profiles')
+          .update({
+            approved: true,
+            analysis_credits: 100,
+            expires_at: newExpiry.toISOString()
+          })
+          .eq('id', userId);
+
+        if (approveError) {
+          console.error("APPROVE ERROR:", approveError);
+        } else {
+          console.log("USER APPROVED AND CREDITS SET OK");
+        }
+
+      } else if (type === 'recharge') {
+        // Recarga: añadir 100 creditos
         const { error: rpcError } = await supabase.rpc('add_analysis_credits', {
           p_user_id: userId,
           p_credits: 100
@@ -333,7 +371,9 @@ app.post("/webhook", async (req, res) => {
         } else {
           console.log("CREDITS ADDED OK");
         }
+
       } else if (type === 'renewal') {
+        // Renovacion: extender 1 año desde hoy
         const newExpiry = new Date();
         newExpiry.setFullYear(newExpiry.getFullYear() + 1);
         const { error: updateError } = await supabase
@@ -346,6 +386,7 @@ app.post("/webhook", async (req, res) => {
           console.log("RENEWAL UPDATED OK");
         }
       }
+
     } catch (dbError) {
       console.error("DB ERROR:", dbError);
     }
