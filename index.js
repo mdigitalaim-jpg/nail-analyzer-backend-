@@ -19,6 +19,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.post("/analyze", async (req, res) => {
   const { image_url, language } = req.body;
+  console.log("ANALYZE CALLED - language param:", language, "| body keys:", Object.keys(req.body || {}));
   if (!image_url) {
     return res.status(400).json({ error: "image_url es requerido" });
   }
