@@ -3,8 +3,6 @@ const cors = require("cors");
 const fetch = require("node-fetch");
 const app = express();
 app.use(cors());
-
-// Raw body needed for Stripe webhook signature verification
 app.use((req, res, next) => {
   if (req.originalUrl === '/webhook') {
     const chunks = [];
@@ -19,14 +17,16 @@ app.use((req, res, next) => {
 });
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ─────────────────────────────────────────────
-// ANALYZE ENDPOINT — NO TOCAR
-// ─────────────────────────────────────────────
 app.post("/analyze", async (req, res) => {
-  const { image_url } = req.body;
+  const { image_url, language } = req.body;
   if (!image_url) {
     return res.status(400).json({ error: "image_url es requerido" });
   }
+
+  const lang = language === 'en' ? 'en' : 'es';
+  const languageInstruction = lang === 'en'
+    ? 'IMPORTANT: Write the ENTIRE analysis in ENGLISH. All labels, values, observations and conclusions must be in English.'
+    : 'IMPORTANTE: Escribe TODO el analisis en ESPANOL.';
 
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -45,6 +45,8 @@ app.post("/analyze", async (req, res) => {
               {
                 type: "input_text",
                 text: `
+${languageInstruction}
+
 Eres una nail tech certificada con mas de 10 anos de experiencia en esculpido profesional de unas en acrilico y gel.
 Tu analisis debe ser el que daria una profesional en un curso avanzado, con terminologia tecnica del sector.
 
@@ -202,7 +204,6 @@ Usa este formato exacto:
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       console.log("OPENAI ERROR:", JSON.stringify(data, null, 2));
       return res.status(500).json({ error: "Error OpenAI", details: data });
@@ -216,7 +217,6 @@ Usa este formato exacto:
       "";
 
     result = result.trim();
-
     if (!result) {
       console.log("RESPUESTA VACÍA:", JSON.stringify(data, null, 2));
       return res.status(500).json({ error: "Respuesta vacía" });
@@ -230,9 +230,6 @@ Usa este formato exacto:
   }
 });
 
-// ─────────────────────────────────────────────
-// STRIPE ENDPOINTS
-// ─────────────────────────────────────────────
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
@@ -242,44 +239,30 @@ const getSupabase = () => createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Create checkout session
 app.post("/create-checkout-session", async (req, res) => {
   const { type, userId, userEmail } = req.body;
-
   if (!type || !userId) {
     return res.status(400).json({ error: "type y userId son requeridos" });
   }
-
-  const prices = {
-    initial: 4800,   // 48€ - acceso inicial
-    recharge: 1000,  // 10€ - recarga 100 analisis
-    renewal: 1000,   // 10€ - renovacion 1 ano
-  };
-
+  const prices = { initial: 4800, recharge: 1000, renewal: 1000 };
   const names = {
     initial: 'Acceso inicial - Nails Training',
     recharge: 'Recarga 100 analisis',
     renewal: 'Renovacion 1 ano',
   };
-
   const descriptions = {
     initial: 'Acceso completo a la app durante 1 ano + 100 analisis de imagenes con IA',
     recharge: '100 analisis de imagenes con IA',
     renewal: 'Acceso a la app durante 1 ano adicional',
   };
-
   const amount = prices[type] || 1000;
-
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: names[type] || type,
-            description: descriptions[type] || '',
-          },
+          product_data: { name: names[type] || type, description: descriptions[type] || '' },
           unit_amount: amount,
         },
         quantity: 1,
@@ -290,7 +273,6 @@ app.post("/create-checkout-session", async (req, res) => {
       customer_email: userEmail,
       metadata: { userId, type },
     });
-
     res.json({ url: session.url });
   } catch (error) {
     console.error("STRIPE ERROR:", error);
@@ -298,107 +280,57 @@ app.post("/create-checkout-session", async (req, res) => {
   }
 });
 
-// Stripe webhook
 app.post("/webhook", async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error("WEBHOOK SIGNATURE ERROR:", err.message);
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
-
   console.log("WEBHOOK EVENT RECEIVED:", event.type);
-
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
     const { userId, type } = session.metadata;
-
     console.log("PROCESSING PAYMENT:", { userId, type });
-
     const supabase = getSupabase();
-
     try {
-      // Guardar pago en tabla payments
       const { error: insertError } = await supabase.from('payments').insert({
-        user_id: userId,
-        type,
-        amount: session.amount_total / 100,
-        stripe_session_id: session.id,
-        status: 'completed'
+        user_id: userId, type, amount: session.amount_total / 100,
+        stripe_session_id: session.id, status: 'completed'
       });
-
-      if (insertError) {
-        console.error("INSERT ERROR:", insertError);
-      } else {
-        console.log("PAYMENT INSERTED OK");
-      }
+      if (insertError) console.error("INSERT ERROR:", insertError);
+      else console.log("PAYMENT INSERTED OK");
 
       if (type === 'initial') {
-        // Pago inicial: aprobar usuario + asignar 100 creditos + 1 año de acceso
         const newExpiry = new Date();
         newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-
-        const { error: approveError } = await supabase
-          .from('profiles')
-          .update({
-            approved: true,
-            analysis_credits: 100,
-            expires_at: newExpiry.toISOString()
-          })
+        const { error: approveError } = await supabase.from('profiles')
+          .update({ approved: true, analysis_credits: 100, expires_at: newExpiry.toISOString() })
           .eq('id', userId);
-
-        if (approveError) {
-          console.error("APPROVE ERROR:", approveError);
-        } else {
-          console.log("USER APPROVED AND CREDITS SET OK");
-        }
-
+        if (approveError) console.error("APPROVE ERROR:", approveError);
+        else console.log("USER APPROVED AND CREDITS SET OK");
       } else if (type === 'recharge') {
-        // Recarga: añadir 100 creditos
-        const { error: rpcError } = await supabase.rpc('add_analysis_credits', {
-          p_user_id: userId,
-          p_credits: 100
-        });
-        if (rpcError) {
-          console.error("RPC ERROR:", rpcError);
-        } else {
-          console.log("CREDITS ADDED OK");
-        }
-
+        const { error: rpcError } = await supabase.rpc('add_analysis_credits', { p_user_id: userId, p_credits: 100 });
+        if (rpcError) console.error("RPC ERROR:", rpcError);
+        else console.log("CREDITS ADDED OK");
       } else if (type === 'renewal') {
-        // Renovacion: extender 1 año desde hoy
         const newExpiry = new Date();
         newExpiry.setFullYear(newExpiry.getFullYear() + 1);
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ expires_at: newExpiry.toISOString() })
-          .eq('id', userId);
-        if (updateError) {
-          console.error("UPDATE ERROR:", updateError);
-        } else {
-          console.log("RENEWAL UPDATED OK");
-        }
+        const { error: updateError } = await supabase.from('profiles')
+          .update({ expires_at: newExpiry.toISOString() }).eq('id', userId);
+        if (updateError) console.error("UPDATE ERROR:", updateError);
+        else console.log("RENEWAL UPDATED OK");
       }
-
     } catch (dbError) {
       console.error("DB ERROR:", dbError);
     }
   }
-
   res.json({ received: true });
 });
 
-// ─────────────────────────────────────────────
-app.get("/", (req, res) => {
-  res.send("Servidor funcionando");
-});
+app.get("/", (req, res) => { res.send("Servidor funcionando"); });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
