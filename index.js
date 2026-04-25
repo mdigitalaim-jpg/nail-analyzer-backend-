@@ -26,8 +26,11 @@ app.post("/analyze", async (req, res) => {
 
   const lang = language === 'en' ? 'en' : 'es';
   const languageInstruction = lang === 'en'
-    ? 'IMPORTANT: Write the ENTIRE analysis in ENGLISH. All labels, values, observations and conclusions must be in English.'
-    : 'IMPORTANTE: Escribe TODO el analisis en ESPANOL.';
+    ? 'CRITICAL LANGUAGE RULE: You MUST write the ENTIRE response in ENGLISH ONLY. Every word, label, value and conclusion must be in English. Do NOT use Spanish. Translate all terms: Unas visibles=Nails visible, Forma=Shape, Longitud=Length, Direccion=Direction, Simetria=Symmetry, Francesa=French, Definicion=Definition, Posicion=Position, Uniforme=Uniform, Grosor=Thickness, Puntos fuertes=Strengths, Puntos a corregir=Points to correct, Valoracion=Assessment, Errores tecnicos=Technical errors, Limitaciones=Limitations.'
+    : 'Escribe TODO el analisis en ESPANOL.';
+
+
+
 
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
